@@ -195,6 +195,8 @@ C<$SIG{'__DIE__'}>.
 
 =head1 AUTHORS
 
+=over
+
 =item *
 
 Graham Knop, E<lt>haarg@haarg.orgE<gt>
