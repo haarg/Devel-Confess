@@ -1,9 +1,9 @@
 package Carp::Always::WithRefs;
 use 5.006;
 use strict;
-use warnings;
+use warnings FATAL => 'all';
 
-use Carp qw(verbose);
+use Carp ();
 use Scalar::Util qw(blessed);
 use overload ();
 
@@ -13,6 +13,50 @@ $VERSION = eval $VERSION;
 $Carp::Internal{+__PACKAGE__}++;
 our %HaveTrace;
 $HaveTrace{'Throwable::Error'}++;
+
+my %OLD_SIG;
+my $old_verbose;
+
+my $do_objects = 1;
+
+sub import {
+  my $class = shift;
+  my %opts = map {
+    my $opt = $_;
+    $opt =~ s/^-//;
+    my $val = !($opt =~ s/^no_//);
+    $opt => $val;
+  } @_;
+
+  $do_objects = delete $opts{objects}
+    if exists $opts{objects};
+
+  if (keys %opts) {
+    Carp::croak "invalid options: "
+      . join(', ', map { ($opts{$_} ? '' : 'no_') . $_ } keys %opts);
+  }
+
+  return
+    if keys %OLD_SIG;
+
+  @OLD_SIG{qw(__DIE__ __WARN__)} = @SIG{qw(__DIE__ __WARN__)};
+  $SIG{__DIE__} = \&_die;
+  $SIG{__WARN__} = \&_warn;
+
+  $old_verbose = $Carp::Verbose;
+  $Carp::Verbose = 1;
+}
+
+sub unimport {
+  return
+    unless keys %OLD_SIG;
+  @SIG{qw(__DIE__ __WARN__)} = delete @OLD_SIG{qw(__DIE__ __WARN__)};
+
+  $Carp::Verbose = $old_verbose;
+}
+END {
+  __PACKAGE__->unimport;
+}
 
 sub _warn {
   warn _convert(@_);
@@ -24,6 +68,8 @@ sub _die {
 my $pack_suffix = 'A000';
 sub _convert {
   if (my $class = blessed $_[0]) {
+    return @_
+      unless $do_objects;
     if (
       grep {
         $HaveTrace{$_}
@@ -72,18 +118,6 @@ sub _convert {
     $message =~ s/.*?\n//s;
     join('', @_, $message);
   }
-}
-
-my %OLD_SIG;
-
-BEGIN {
-  @OLD_SIG{qw(__DIE__ __WARN__)} = @SIG{qw(__DIE__ __WARN__)};
-  $SIG{__DIE__} = \&_die;
-  $SIG{__WARN__} = \&_warn;
-}
-
-END {
-  @SIG{qw(__DIE__ __WARN__)} = @OLD_SIG{qw(__DIE__ __WARN__)};
 }
 
 1;
