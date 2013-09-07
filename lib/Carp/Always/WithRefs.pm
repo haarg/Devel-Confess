@@ -59,10 +59,22 @@ END {
 }
 
 sub _warn {
-  warn _convert(@_);
+  my @convert = _convert(@_);
+  if (my $warn = $OLD_SIG{__WARN__}) {
+    $warn->(@convert);
+  }
+  else {
+    warn @convert;
+  }
 }
 sub _die {
-  die _convert(@_);
+  my @convert = _convert(@_);
+  if (my $sig = $OLD_SIG{__DIE__}) {
+    $sig->(@convert);
+  }
+  else {
+    die @convert;
+  }
 }
 
 my $pack_suffix = 'A000';
@@ -130,7 +142,7 @@ sub _convert {
     @_;
   }
   elsif ((caller(1))[0] eq 'Carp') {
-    @_;
+    wantarray ? @_ : join('', @_);
   }
   else {
     my $message = Carp::longmess();
