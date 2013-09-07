@@ -84,17 +84,36 @@ sub _convert {
     my $newclass = __PACKAGE__ . "::$post";
     my $message = Carp::longmess();
     $message =~ s/\.?$/./m;
-    my $stringify = overload::Method($ex, '""');
-    my $string_call = $stringify ? '$stringify' : 'overload::StrVal';
+    my $bool = overload::Overloaded($ex, 'bool')
+      ? q{
+        sub {
+          bless $_[0], $class;
+          my $out = !!$_[0];
+          bless $_[0], $newclass;
+          return $out;
+        }
+      }
+      : 'sub () { 1 }';
     eval qq{
       package $newclass;
       our \@ISA = (\$class);
-      use overload '""' => sub {
-        bless \$_[0], \$class;
-        my \$out = \$_[0] . \$message;
-        bless \$_[0], \$newclass;
-        return \$out;
-      };
+      use overload (
+        fallback => 1,
+
+        'bool' => $bool,
+        '0+' => sub {
+          bless \$_[0], \$class;
+          my \$out = 0+\$_[0];
+          bless \$_[0], \$newclass;
+          return \$out;
+        },
+        '""' => sub {
+          bless \$_[0], \$class;
+          my \$out = "\$_[0]" . \$message;
+          bless \$_[0], \$newclass;
+          return \$out;
+        },
+      );
       sub DESTROY {
         no strict 'refs';
         delete \${'Carp::Always::WithRefs::'}{\$post};
