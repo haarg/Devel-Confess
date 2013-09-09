@@ -11,8 +11,10 @@ our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
 
 $Carp::Internal{+__PACKAGE__}++;
-our %HaveTrace;
-$HaveTrace{'Throwable::Error'}++;
+our %NoTrace;
+$NoTrace{'Throwable::Error'}++;
+$NoTrace{'Moose::Error::Default'}++;
+$NoTrace{'Ouch'}++;
 
 my %OLD_SIG;
 my $old_verbose;
@@ -82,14 +84,15 @@ sub _convert {
   if (my $class = blessed $_[0]) {
     return @_
       unless $do_objects;
+    my $has_does = $class->can('DOES');
     if (
       grep {
-        $HaveTrace{$_}
+        $NoTrace{$_}
         && $class->isa($_)
-        || ($class->can('DOES') && $class->DOES($_))
-      } keys %HaveTrace
+        || ($has_does && $class->DOES($_))
+      } keys %NoTrace
     ) {
-      die $_[0];
+      return @_;
     }
     my $ex = $_[0];
     my $post = '__ANON_' . $pack_suffix++ . '__';
