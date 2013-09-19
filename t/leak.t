@@ -5,7 +5,7 @@ use Test::More
   defined &Scalar::Util::weaken ? (tests => 3)
     : skip_all => "Can't prevent leaks without Scalar::Util::weaken";
 
-use Carp::Always::AndRefs;
+use Carp::Always::EvenObjects;
 
 my $gone = 0;
 {
@@ -28,6 +28,6 @@ is $gone, 0, "exception not destroyed when captured";
 undef $@;
 is $gone, 1, "exception destroyed after \$@ cleared";
 
-ok !(grep { /^__ANON_\w+__::$/ } keys %Carp::Always::AndRefs::),
+ok !(grep { /^__ANON_\w+__::$/ } keys %Carp::Always::EvenObjects::),
   "temp packages don't leak";
 

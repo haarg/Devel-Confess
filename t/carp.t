@@ -5,7 +5,7 @@ use File::Temp qw(tempfile);
 use IPC::Open3;
 use File::Spec;
 
-my @PERL5OPTS = ((map "-I$_", @INC), '-MCarp::Always::AndRefs');
+my @PERL5OPTS = ((map "-I$_", @INC), '-MCarp::Always::EvenObjects');
 
 sub capture ($) {
     my ($code) = @_;

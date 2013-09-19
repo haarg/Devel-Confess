@@ -1,4 +1,4 @@
-package Carp::Always::AndRefs;
+package Carp::Always::EvenObjects;
 use 5.006;
 use strict;
 use warnings FATAL => 'all';
@@ -56,9 +56,9 @@ sub import {
     for @opts;
 
   if (exists $options{hacks}) {
-    require Carp::Always::AndRefs::Hacks;
+    require Carp::Always::EvenObjects::Hacks;
     my $do = $options{hacks} ? 'import' : 'unimport';
-    Carp::Always::AndRefs::Hacks->$do;
+    Carp::Always::EvenObjects::Hacks->$do;
   }
 
   return
@@ -139,7 +139,7 @@ sub _convert {
 
     {
       no strict 'refs';
-      @{$newclass . '::ISA'} = ('Carp::Always::AndRefs::Attached', $class);
+      @{$newclass . '::ISA'} = ('Carp::Always::EvenObjects::Attached', $class);
     }
 
     bless $ex, $newclass;
@@ -196,11 +196,11 @@ sub _ex_info {
 }
 
 {
-  package Carp::Always::AndRefs::Attached;
+  package Carp::Always::EvenObjects::Attached;
   use overload
     fallback => 1,
     'bool' => sub {
-      my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
+      my ($ex, $class) = Carp::Always::EvenObjects::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = !!$ex;
@@ -208,7 +208,7 @@ sub _ex_info {
       return $out;
     },
     '0+' => sub {
-      my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
+      my ($ex, $class) = Carp::Always::EvenObjects::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = 0+$ex;
@@ -216,7 +216,7 @@ sub _ex_info {
       return $out;
     },
     '""' => sub {
-      my ($ex, $class, $message) = Carp::Always::AndRefs::_ex_info(@_);
+      my ($ex, $class, $message) = Carp::Always::EvenObjects::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = "$ex" . $message;
@@ -226,7 +226,7 @@ sub _ex_info {
   ;
 
   sub DESTROY {
-    my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
+    my ($ex, $class) = Carp::Always::EvenObjects::_ex_info(@_);
     my $newclass = ref $ex;
     $newclass =~ s/([^:]+)$//;
     my $post = $1;
@@ -251,16 +251,16 @@ __END__
 
 =head1 NAME
 
-Carp::Always::AndRefs - Warns and dies noisily with stack backtraces
+Carp::Always::EvenObjects - Warns and dies noisily with stack backtraces
 
 =head1 SYNOPSIS
 
-  use Carp::Always::AndRefs;
+  use Carp::Always::EvenObjects;
 
 makes every C<warn()> and C<die()> complains loudly in the calling package 
 and elsewhere. More often used on the command line:
 
-  perl -MCarp::Always::AndRefs script.pl
+  perl -MCarp::Always::EvenObjects script.pl
 
 Also includes L<Devel::Confess> as an alias:
 
@@ -280,13 +280,13 @@ Here are how stack backtraces produced by this module
 looks:
 
   # it works for explicit die's and warn's
-  $ perl -MCarp::Always::AndRefs -e 'sub f { die "arghh" }; sub g { f }; g'
+  $ perl -MCarp::Always::EvenObjects -e 'sub f { die "arghh" }; sub g { f }; g'
   arghh at -e line 1.
           main::f() called at -e line 1
           main::g() called at -e line 1
 
   # it works for interpreter-thrown failures
-  $ perl -MCarp::Always::AndRefs -w -e 'sub f { $a = shift; @a = @$a };' \
+  $ perl -MCarp::Always::EvenObjects -w -e 'sub f { $a = shift; @a = @$a };' \
                                     -e 'sub g { f(undef) }; g'
   Use of uninitialized value in array dereference at -e line 1.
           main::f('undef') called at -e line 2
@@ -320,19 +320,19 @@ Enable attaching stack traces to exception objects.  Defaults to on.
 
 =item C<hacks>
 
-Load the L<Carp::Always::AndRefs::Hacks> module to use built in
+Load the L<Carp::Always::EvenObjects::Hacks> module to use built in
 stack traces on supported exception types.
 
 =back
 
 =head1 CONFIGURATION
 
-=head2 C<%Carp::Always::AndRefs::NoTrace>
+=head2 C<%Carp::Always::EvenObjects::NoTrace>
 
 Classes or roles added to this hash will not have stack traces
 attached to them.  This is useful for exception classes that provide
 their own stack traces, or classes that don't cope well with being
-re-blessed.  If L<Carp::Always::AndRefs::Hacks> is loaded, it will
+re-blessed.  If L<Carp::Always::EvenObjects::Hacks> is loaded, it will
 automatically add its supported exception types to this hash.
 
 Default Entries:
@@ -385,7 +385,7 @@ L<Carp::Source::Always>
 =back
 
 Please report bugs via CPAN RT 
-http://rt.cpan.org/NoAuth/Bugs.html?Dist=Carp-Always-AndRefs.
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=Carp-Always-EvenObjects.
 
 =head1 BUGS
 

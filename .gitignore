@@ -11,6 +11,6 @@
 *~
 *#
 .#*
-/Carp-Always-WithRefs-*
+/Carp-Always-EvenObjects-*
 /cover_db/
 /MANIFEST.SKIP
