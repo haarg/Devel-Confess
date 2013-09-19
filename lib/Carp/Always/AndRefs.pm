@@ -297,9 +297,53 @@ like C<cluck> and C<confess>, respectively.
 Stack traces will also be included for exception objects and non-object
 references.
 
-=head2 EXPORT
+=head1 METHODS
 
-Nothing at all is exported.
+=head2 import( @options )
+
+Enables stack traces and sets options.  Options can be prefixed
+with no_ to disable them.
+
+=over 4
+
+=item C<objects>
+
+Enable attaching stack traces to exception objects.  Defaults to on.
+
+=item C<hacks>
+
+Load the L<Carp::Always::AndRefs::Hacks> module to use built in
+stack traces on supported exception types.
+
+=back
+
+=head1 CONFIGURATION
+
+=head2 C<%Carp::Always::AndRefs::NoTrace>
+
+Classes or roles added to this hash will not have stack traces
+attached to them.  This is useful for exception classes that provide
+their own stack traces, or classes that don't cope well with being
+re-blessed.  If L<Carp::Always::AndRefs::Hacks> is loaded, it will
+automatically add its supported exception types to this hash.
+
+Default Entries:
+
+=over 4
+
+=item L<Throwable::Error>
+
+Provides a stack trace
+
+=item L<Moose::Error::Default>
+
+Provides a stack trace
+
+=item L<Ouch>
+
+Conflicts with mechanism used to attach stack traces.
+
+=back
 
 =head1 ACKNOWLEDGMENTS
 
