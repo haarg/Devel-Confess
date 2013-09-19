@@ -9,12 +9,9 @@ sub import {
   $_[0]->SUPER::import(-hacks, @_[1..$#_]);
 }
 
-{
-  package # hide
-    DB;
-
-  # allow -d:Confess
-  sub DB {}
+# allow -d:Confess
+if (!defined &DB::DB) {
+  *DB::DB = sub {};
 }
 
 1;
