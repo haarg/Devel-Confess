@@ -19,24 +19,20 @@ $NoTrace{'Ouch'}++;
 my %OLD_SIG;
 my $old_verbose;
 
-my $do_objects = 1;
+my %options = (
+  objects => 1,
+);
 
 sub import {
   my $class = shift;
-  my %opts = map {
-    my $opt = $_;
-    $opt =~ s/^-//;
-    my $val = !($opt =~ s/^no_//);
-    $opt => $val;
-  } @_;
 
-  $do_objects = delete $opts{objects}
-    if exists $opts{objects};
-
-  if (keys %opts) {
-    Carp::croak "invalid options: "
-      . join(', ', map { ($opts{$_} ? '' : 'no_') . $_ } keys %opts);
+  my @opts = map { /^-?(no_)?(.*)/, [ $_, $2, !$1 ] } @_;
+  if (my @bad = grep { !exists $options{$_->[1]} } @opts) {
+    Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
   }
+
+  $options{$_->[1]} = $_->[2]
+    for @opts;
 
   return
     if keys %OLD_SIG;
@@ -83,7 +79,7 @@ my $pack_suffix = 'A000';
 sub _convert {
   if (my $class = blessed $_[0]) {
     return @_
-      unless $do_objects;
+      unless $options{objects};
     my $has_does = $class->can('DOES');
     if (
       grep {
