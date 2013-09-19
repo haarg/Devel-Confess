@@ -254,14 +254,14 @@ looks:
 
   # it works for explicit die's and warn's
   $ perl -MCarp::Always::AndRefs -e 'sub f { die "arghh" }; sub g { f }; g'
-  arghh at -e line 1
+  arghh at -e line 1.
           main::f() called at -e line 1
           main::g() called at -e line 1
 
   # it works for interpreter-thrown failures
   $ perl -MCarp::Always::AndRefs -w -e 'sub f { $a = shift; @a = @$a };' \
                            -e 'sub g { f(undef) }; g'
-  Use of uninitialized value in array dereference at -e line 1
+  Use of uninitialized value in array dereference at -e line 1.
           main::f('undef') called at -e line 2
           main::g() called at -e line 2
 
@@ -275,10 +275,8 @@ Oh, by the way, C<carp> and C<croak> when requiring/using
 the C<Carp> module are also made verbose, behaving
 like C<cluck> and C<confess>, respectively.
 
-Stack traces will also be included for exception objects.
-
-Currently, stack traces are not included for non-object references
-thrown as exceptions.
+Stack traces will also be included for exception objects and non-object
+references.
 
 =head2 EXPORT
 
