@@ -16,6 +16,7 @@ my %META = (
     build => { requires => {
     } },
     test => { requires => {
+      'File::Temp'  => 0,
       'Test::More'  => 0,
     } },
     runtime => { requires => {
@@ -29,7 +30,6 @@ my %META = (
       web => 'https://github.com/haarg/Carp-Always-AndRefs',
       type => 'git',
     },
-    x_IRC => 'irc://irc.perl.org/#web-simple',
     bugtracker => {
       web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Carp-Always-AndRefs',
       mailto => 'bug-Carp-Always-AndRefs@rt.cpan.org',
