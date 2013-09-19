@@ -257,8 +257,9 @@ Carp::Always::EvenObjects - Warns and dies noisily with stack backtraces
 
   use Carp::Always::EvenObjects;
 
-makes every C<warn()> and C<die()> complains loudly in the calling package 
-and elsewhere. More often used on the command line:
+makes every C<warn()> and C<die()> complains loudly in the calling package
+and elsewhere.  Works even when exception objects are thrown.  More often
+used on the command line:
 
   perl -MCarp::Always::EvenObjects script.pl
 
@@ -272,9 +273,10 @@ or
 
 =head1 DESCRIPTION
 
-This module is meant as a debugging aid. It can be
-used to make a script complain loudly with stack backtraces
-when warn()ing or die()ing.
+This module is meant as a debugging aid. It can be used to make a
+script complain loudly with stack backtraces when warn()ing or
+die()ing.  Unlike other similar modules (e.g. L<Carp::Always>), it
+includes stack traces even when exception objects are thrown.
 
 Here are how stack backtraces produced by this module
 looks:
@@ -287,7 +289,7 @@ looks:
 
   # it works for interpreter-thrown failures
   $ perl -MCarp::Always::EvenObjects -w -e 'sub f { $a = shift; @a = @$a };' \
-                                    -e 'sub g { f(undef) }; g'
+                                        -e 'sub g { f(undef) }; g'
   Use of uninitialized value in array dereference at -e line 1.
           main::f('undef') called at -e line 2
           main::g() called at -e line 2
@@ -302,8 +304,7 @@ Oh, by the way, C<carp> and C<croak> when requiring/using
 the C<Carp> module are also made verbose, behaving
 like C<cluck> and C<confess>, respectively.
 
-Stack traces will also be included for exception objects and non-object
-references.
+Stack traces are also included if raw non-object references are thrown.
 
 =head1 METHODS
 
@@ -349,7 +350,7 @@ Provides a stack trace
 
 =item L<Ouch>
 
-Conflicts with mechanism used to attach stack traces.
+Conflicts with the mechanism used to attach stack traces.
 
 =back
 
