@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 7;
+use Test::More tests => 20;
 use File::Temp qw(tempfile);
 use IPC::Open3;
 use File::Spec;
@@ -24,7 +24,6 @@ sub capture ($) {
     unlink $filename
       or die "Couldn't unlink $filename: $!\n";
 
-    $output =~ s/\.?$/./m;
     return $output;
 }
 
@@ -77,43 +76,85 @@ Can't use an undefined value as an ARRAY reference at test-block.pl line 1.
 	A::g() called at test-block.pl line 3
 END_OUTPUT
 
-is capture <<'END_CODE' , <<'END_OUTPUT', 'foo at bar';
-#line 1 test-block.pl
-die "foo at bar"
-END_CODE
-foo at bar at test-block.pl line 1.
-END_OUTPUT
+for my $type (qw(die croak confess)) {
 
-is capture <<'END_CODE' , <<'END_OUTPUT', 'croak';
+  is capture <<"END_CODE" , <<'END_OUTPUT', "$type at root";
 use Carp;
 #line 1 test-block.pl
-croak "foo at bar"
+$type "foo at bar";
 END_CODE
 foo at bar at test-block.pl line 1.
 END_OUTPUT
 
-is capture <<'END_CODE', <<'END_OUTPUT', 'confess';
+  is capture <<"END_CODE" , <<'END_OUTPUT', "$type in sub";
 use Carp;
+sub foo {
 #line 1 test-block.pl
-confess "foo at bar"
+  $type "foo at bar";
+}
+#line 2 test-block.pl
+foo();
 END_CODE
 foo at bar at test-block.pl line 1.
+	main::foo() called at test-block.pl line 2
 END_OUTPUT
 
-like capture <<'END_CODE', qr/${\<<'END_OUTPUT'}/, 'object';
+  is capture <<"END_CODE" , <<'END_OUTPUT', "$type with newline";
+use Carp;
+sub foo {
 #line 1 test-block.pl
-die bless {}, 'NoOverload';
+  $type "foo at bar\n";
+}
+#line 2 test-block.pl
+foo();
 END_CODE
-^NoOverload=HASH\(0x\w+\) at test-block.pl line 1.
+foo at bar
+ at test-block.pl line 1.
+	main::foo() called at test-block.pl line 2
 END_OUTPUT
 
-is capture <<'END_CODE', <<'END_OUTPUT', 'object with overload';
+  like capture <<"END_CODE", qr/${\<<'END_OUTPUT'}/, "$type with object";
+use Carp;
+sub foo {
+#line 1 test-block.pl
+  $type bless {}, 'NoOverload';
+}
+#line 2 test-block.pl
+foo();
+END_CODE
+NoOverload=HASH\(0x\w+\) at test-block\.pl line 1\.
+	main::foo\(\) called at test-block\.pl line 2
+END_OUTPUT
+
+  is capture <<"END_CODE", <<'END_OUTPUT', "$type with object with overload";
+use Carp;
 {
   package HasOverload;
   use overload '""' => sub { "message" };
 }
+sub foo {
 #line 1 test-block.pl
-die bless {}, 'HasOverload';
+  $type bless {}, 'HasOverload';
+}
+#line 2 test-block.pl
+foo();
 END_CODE
 message at test-block.pl line 1.
+	main::foo() called at test-block.pl line 2
 END_OUTPUT
+
+  like capture <<"END_CODE", qr/${\<<'END_OUTPUT'}/, "$type with non-object ref";
+use Carp;
+sub foo {
+#line 1 test-block.pl
+  $type [1];
+}
+#line 2 test-block.pl
+foo();
+END_CODE
+^ARRAY\(0x\w+\) at test-block\.pl line 1\.
+	main::foo\(\) called at test-block\.pl line 2
+END_OUTPUT
+
+}
+
