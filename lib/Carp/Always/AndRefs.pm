@@ -279,7 +279,7 @@ looks:
 
   # it works for interpreter-thrown failures
   $ perl -MCarp::Always::AndRefs -w -e 'sub f { $a = shift; @a = @$a };' \
-                           -e 'sub g { f(undef) }; g'
+                                    -e 'sub g { f(undef) }; g'
   Use of uninitialized value in array dereference at -e line 1.
           main::f('undef') called at -e line 2
           main::g() called at -e line 2
