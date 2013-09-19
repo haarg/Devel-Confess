@@ -12,6 +12,9 @@ BEGIN {
   *weaken = defined &Scalar::Util::weaken
     ? \&Scalar::Util::weaken : sub ($) { 0 };
 };
+BEGIN {
+  *_CARP_DOT = $Carp::VERSION >= 1.25 ? sub () {1} : sub () {0};
+}
 
 our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
@@ -145,12 +148,28 @@ sub _convert {
     return($^S ? @_ : "@_$info->[1]");
   }
   elsif ((caller(1))[0] eq 'Carp') {
-    wantarray ? @_ : join('', @_);
+    if (_CARP_DOT) {
+      return @_;
+    }
+    else {
+      my $message = Carp::longmess();
+      my $out = join('', @_);
+      if ($out =~ s/\Q$message\E\z//) {
+        $message =~ s/\.?$/./m;
+        $out .= $message;
+      }
+      return $out;
+    }
   }
   else {
     my $message = Carp::longmess();
-    $message =~ s/.*?\n//s;
-    join('', @_, $message);
+    $message =~ s/^(.*\n)//;
+    my $where = $1;
+    $where =~ s/\.?$/./m;
+    my $out = join('', @_);
+    $out =~ s/(?:\Q$where\E)?\z/$where/;
+    $out .= $message;
+    return $out;
   }
 }
 
