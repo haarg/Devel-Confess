@@ -145,7 +145,7 @@ sub _convert {
       $info;
     };
 
-    return($^S ? @_ : "@_$info->[1]");
+    return($^S ? @_ : join('', @_, $info->[2]));
   }
   elsif ((caller(1))[0] eq 'Carp') {
     if (_CARP_DOT) {
