@@ -1,4 +1,4 @@
-package Carp::Always::WithRefs;
+package Carp::Always::AndRefs;
 use 5.006;
 use strict;
 use warnings FATAL => 'all';
@@ -43,9 +43,9 @@ sub import {
     for @opts;
 
   if (exists $options{hacks}) {
-    require Carp::Always::WithRefs::Hacks;
+    require Carp::Always::AndRefs::Hacks;
     my $do = $options{hacks} ? 'import' : 'unimport';
-    Carp::Always::WithRefs::Hacks->$do;
+    Carp::Always::AndRefs::Hacks->$do;
   }
 
   return
@@ -126,15 +126,23 @@ sub _convert {
 
     {
       no strict 'refs';
-      @{$newclass . '::ISA'} = ('Carp::Always::WithRefs::Attached', $class);
+      @{$newclass . '::ISA'} = ('Carp::Always::AndRefs::Attached', $class);
     }
 
     bless $ex, $newclass;
     $ex;
   }
-  elsif (ref $_[0]) {
-    # TODO
-    @_;
+  elsif (ref(my $ex = $_[0])) {
+    my $id = refaddr($ex);
+    my $info = $attached{$id} ||= do {
+      my $message = Carp::longmess();
+      $message =~ s/\.?$/./m;
+      my $info = [ $_[0], undef, $message ];
+      weaken $info->[0];
+      $info;
+    };
+
+    return($^S ? @_ : "@_$info->[1]");
   }
   elsif ((caller(1))[0] eq 'Carp') {
     wantarray ? @_ : join('', @_);
@@ -151,11 +159,11 @@ sub _ex_info {
 }
 
 {
-  package Carp::Always::WithRefs::Attached;
+  package Carp::Always::AndRefs::Attached;
   use overload
     fallback => 1,
     'bool' => sub {
-      my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+      my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = !!$ex;
@@ -163,7 +171,7 @@ sub _ex_info {
       return $out;
     },
     '0+' => sub {
-      my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+      my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = 0+$ex;
@@ -171,7 +179,7 @@ sub _ex_info {
       return $out;
     },
     '""' => sub {
-      my ($ex, $class, $message) = Carp::Always::WithRefs::_ex_info(@_);
+      my ($ex, $class, $message) = Carp::Always::AndRefs::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = "$ex" . $message;
@@ -181,7 +189,7 @@ sub _ex_info {
   ;
 
   sub DESTROY {
-    my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+    my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
     my $newclass = ref $ex;
     my ($post) = $newclass =~ s/([^:]+)$//;
 
@@ -205,16 +213,16 @@ __END__
 
 =head1 NAME
 
-Carp::Always::WithRefs - Warns and dies noisily with stack backtraces
+Carp::Always::AndRefs - Warns and dies noisily with stack backtraces
 
 =head1 SYNOPSIS
 
-  use Carp::Always::WithRefs;
+  use Carp::Always::AndRefs;
 
 makes every C<warn()> and C<die()> complains loudly in the calling package 
 and elsewhere. More often used on the command line:
 
-  perl -MCarp::Always::WithRefs script.pl
+  perl -MCarp::Always::AndRefs script.pl
 
 =head1 DESCRIPTION
 
@@ -226,13 +234,13 @@ Here are how stack backtraces produced by this module
 looks:
 
   # it works for explicit die's and warn's
-  $ perl -MCarp::Always::WithRefs -e 'sub f { die "arghh" }; sub g { f }; g'
+  $ perl -MCarp::Always::AndRefs -e 'sub f { die "arghh" }; sub g { f }; g'
   arghh at -e line 1
           main::f() called at -e line 1
           main::g() called at -e line 1
 
   # it works for interpreter-thrown failures
-  $ perl -MCarp::Always::WithRefs -w -e 'sub f { $a = shift; @a = @$a };' \
+  $ perl -MCarp::Always::AndRefs -w -e 'sub f { $a = shift; @a = @$a };' \
                            -e 'sub g { f(undef) }; g'
   Use of uninitialized value in array dereference at -e line 1
           main::f('undef') called at -e line 2
@@ -289,7 +297,7 @@ L<Carp::Source::Always>
 =back
 
 Please report bugs via CPAN RT 
-http://rt.cpan.org/NoAuth/Bugs.html?Dist=Carp-Always-WithRefs.
+http://rt.cpan.org/NoAuth/Bugs.html?Dist=Carp-Always-AndRefs.
 
 =head1 BUGS
 

@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 (do 'maint/Makefile.PL.include' or die $@) unless -f 'META.yml';
 
 my %META = (
-  name => 'Carp::Always::WithRefs',
+  name => 'Carp::Always::AndRefs',
   license => 'perl_5',
   dynamic_config => 0,
   prereqs => {
@@ -25,14 +25,14 @@ my %META = (
   },
   resources => {
     repository => {
-      url => 'git://github.com/haarg/Carp-Always-WithRefs',
-      web => 'https://github.com/haarg/Carp-Always-WithRefs',
+      url => 'git://github.com/haarg/Carp-Always-AndRefs',
+      web => 'https://github.com/haarg/Carp-Always-AndRefs',
       type => 'git',
     },
     x_IRC => 'irc://irc.perl.org/#web-simple',
     bugtracker => {
-      web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Carp-Always-WithRefs',
-      mailto => 'bug-Carp-Always-WithRefs@rt.cpan.org',
+      web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Carp-Always-AndRefs',
+      mailto => 'bug-Carp-Always-AndRefs@rt.cpan.org',
     },
     license => [ 'http://dev.perl.org/licenses/' ],
   },

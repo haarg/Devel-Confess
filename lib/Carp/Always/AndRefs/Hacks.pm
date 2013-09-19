@@ -1,18 +1,18 @@
-package Carp::Always::WithRefs::Hacks;
+package Carp::Always::AndRefs::Hacks;
 use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
 
 {
   package #hide
-    Carp::Always::WithRefs::Hacks::_Guard;
+    Carp::Always::AndRefs::Hacks::_Guard;
   use overload bool => sub () { 0 };
   sub new { bless [$_[1]], $_[0] }
   sub DESTROY { $_[0][0]->() if @{$_[0]} }
 }
 
 sub guard (&) {
-  Carp::Always::WithRefs::Hacks::_Guard->new(@_);
+  Carp::Always::AndRefs::Hacks::_Guard->new(@_);
 }
 
 my $enabled;
@@ -20,7 +20,7 @@ sub import {
   return
     if ++$enabled;
 
-  $Carp::Always::WithRefs::NoTrace{'Exception::Class::Base'}++;
+  $Carp::Always::AndRefs::NoTrace{'Exception::Class::Base'}++;
   {
     my $guard = guard { Exception::Class::Base->Trace(1) };
     if (!$INC{'Exception/Class/Base.pm'}) {
@@ -28,7 +28,7 @@ sub import {
     }
   }
 
-  $Carp::Always::WithRefs::NoTrace{'Ouch'}++;
+  $Carp::Always::AndRefs::NoTrace{'Ouch'}++;
   {
     my $guard = guard { overload::OVERLOAD('Ouch', '""', 'trace') };
     if (!$INC{'Ouch.pm'}) {
@@ -36,7 +36,7 @@ sub import {
     }
   }
 
-  $Carp::Always::WithRefs::NoTrace{'Class::Throwable'}++;
+  $Carp::Always::AndRefs::NoTrace{'Class::Throwable'}++;
   {
     my $guard = guard { $Class::Throwable::DEFAULT_VERBOSITY = 2 };
     if (!$INC{'Class/Throwable.pm'}) {
@@ -44,7 +44,7 @@ sub import {
     }
   }
 
-  $Carp::Always::WithRefs::NoTrace{'Exception::Base'}++;
+  $Carp::Always::AndRefs::NoTrace{'Exception::Base'}++;
   {
     my $guard = guard { Exception::Base->import(verbosity => 3) };
     if (!$INC{'Exception/Base.pm'}) {
@@ -52,7 +52,7 @@ sub import {
     }
   }
 
-  $Carp::Always::WithRefs::NoTrace{'Error'}++;
+  $Carp::Always::AndRefs::NoTrace{'Error'}++;
   {
     my $guard = guard { $Error::Debug = 1 };
     if (!$INC{'Error.pm'}) {
@@ -73,11 +73,11 @@ __END__
 
 =head1 NAME
 
-Carp::Always::WithRefs::Hacks - Enable built in stack traces on exception objects
+Carp::Always::AndRefs::Hacks - Enable built in stack traces on exception objects
 
 =head1 SYNOPSIS
 
-  use Carp::Always::WithRefs::Hacks;
+  use Carp::Always::AndRefs::Hacks;
   use Exception::Class 'MyException';
 
   MyException->throw; # includes stack trace
