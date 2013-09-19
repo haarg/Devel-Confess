@@ -3,6 +3,9 @@ use 5.006;
 use strict;
 use warnings FATAL => 'all';
 
+our $VERSION = '0.001000';
+$VERSION = eval $VERSION;
+
 use Carp ();
 use overload ();
 use Scalar::Util qw(blessed refaddr);
@@ -27,9 +30,6 @@ BEGIN {
     }
   }
 }
-
-our $VERSION = '0.001000';
-$VERSION = eval $VERSION;
 
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
