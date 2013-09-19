@@ -13,13 +13,23 @@ BEGIN {
     ? \&Scalar::Util::weaken : sub ($) { 0 };
 };
 BEGIN {
-  *_CARP_DOT = $Carp::VERSION >= 1.25 ? sub () {1} : sub () {0};
+  *_CARP_DOT = $Carp::VERSION && $Carp::VERSION >= 1.25 ? sub () {1} : sub () {0};
+  if ($Carp::VERSION) {
+    $Carp::Internal{+__PACKAGE__}++;
+    *_longmess = \&Carp::longmess;
+  }
+  else {
+    *_longmess = sub {
+      my $level = 0;
+      $level++ while ((caller($level))[0] =~ /^Carp(?:::|$)/);
+      local $Carp::CarpLevel = $Carp::CarpLevel + $level;
+      &Carp::longmess;
+    }
+  }
 }
 
 our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
-
-$Carp::Internal{+__PACKAGE__}++;
 
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
@@ -119,7 +129,7 @@ sub _convert {
       return @_;
     }
 
-    my $message = Carp::longmess();
+    my $message = _longmess();
     $message =~ s/\.?$/./m;
 
     $attached{$id} = [ $ex, $class, $message ];
@@ -138,7 +148,7 @@ sub _convert {
   elsif (ref(my $ex = $_[0])) {
     my $id = refaddr($ex);
     my $info = $attached{$id} ||= do {
-      my $message = Carp::longmess();
+      my $message = _longmess();
       $message =~ s/\.?$/./m;
       my $info = [ $_[0], undef, $message ];
       weaken $info->[0];
@@ -152,23 +162,31 @@ sub _convert {
       return @_;
     }
     else {
-      my $message = Carp::longmess();
+      my $message = _longmess();
       my $out = join('', @_);
       if ($out =~ s/\Q$message\E\z//) {
         $message =~ s/\.?$/./m;
-        $out .= $message;
       }
+      else {
+        $message =~ s/^(.*\n)//;
+        my $where = $1;
+        $where =~ s/\.?$/./m;
+        $out =~ s/(?:\Q$message\E)?\z//
+          if length $message;
+        $out .= $where;
+      }
+      $out .= $message;
       return $out;
     }
   }
   else {
-    my $message = Carp::longmess();
+    my $message = _longmess();
     $message =~ s/^(.*\n)//;
     my $where = $1;
     $where =~ s/\.?$/./m;
     my $out = join('', @_);
-    $out =~ s/(?:\Q$where\E)?\z/$where/;
-    $out .= $message;
+    $out =~ s/(?:\Q$where\E)?\z//;
+    $out .= $where . $message;
     return $out;
   }
 }
