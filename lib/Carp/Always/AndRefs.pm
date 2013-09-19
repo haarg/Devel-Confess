@@ -262,6 +262,14 @@ and elsewhere. More often used on the command line:
 
   perl -MCarp::Always::AndRefs script.pl
 
+Also includes L<Devel::Confess> as an alias:
+
+  perl -MDevel::Confess script.pl
+
+or
+
+  perl -d:Confess script.pl
+
 =head1 DESCRIPTION
 
 This module is meant as a debugging aid. It can be
