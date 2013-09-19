@@ -4,13 +4,20 @@ use strict;
 use warnings FATAL => 'all';
 
 use Carp ();
-use Scalar::Util qw(blessed);
 use overload ();
+use Scalar::Util qw(blessed refaddr);
+BEGIN {
+  # fake weaken if it isn't available.  will cause leaks, but this
+  # is a brute force debugging tool, so we can deal with it.
+  *weaken = defined &Scalar::Util::weaken
+    ? \&Scalar::Util::weaken : sub ($) { 0 };
+};
 
 our $VERSION = '0.001000';
 $VERSION = eval $VERSION;
 
 $Carp::Internal{+__PACKAGE__}++;
+
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
 $NoTrace{'Moose::Error::Default'}++;
@@ -76,63 +83,45 @@ sub _die {
 }
 
 my $pack_suffix = 'A000';
+my %attached;
+
+sub CLONE {
+  %attached = map { $_->[0] ? (refaddr($_->[0]) => $_) : () } values %attached;
+}
+
 sub _convert {
   if (my $class = blessed $_[0]) {
     return @_
       unless $options{objects};
-    my $has_does = $class->can('DOES');
+    my $ex = $_[0];
+    my $id = refaddr($ex);
+    return @_
+      if $attached{$id};
+
+    my $does = $ex->can('DOES') || sub () { 0 };
     if (
       grep {
         $NoTrace{$_}
-        && $class->isa($_)
-        || ($has_does && $class->DOES($_))
+        && $ex->isa($_)
+        || $ex->$does($_)
       } keys %NoTrace
     ) {
       return @_;
     }
-    my $ex = $_[0];
-    my $post = '__ANON_' . $pack_suffix++ . '__';
-    my $newclass = __PACKAGE__ . "::$post";
+
     my $message = Carp::longmess();
     $message =~ s/\.?$/./m;
-    my $bool = overload::Overloaded($ex, 'bool')
-      ? q{
-        sub {
-          bless $_[0], $class;
-          my $out = !!$_[0];
-          bless $_[0], $newclass;
-          return $out;
-        }
-      }
-      : 'sub () { 1 }';
-    eval qq{
-      package $newclass;
-      our \@ISA = (\$class);
-      use overload (
-        fallback => 1,
 
-        'bool' => $bool,
-        '0+' => sub {
-          bless \$_[0], \$class;
-          my \$out = 0+\$_[0];
-          bless \$_[0], \$newclass;
-          return \$out;
-        },
-        '""' => sub {
-          bless \$_[0], \$class;
-          my \$out = "\$_[0]" . \$message;
-          bless \$_[0], \$newclass;
-          return \$out;
-        },
-      );
-      sub DESTROY {
-        no strict 'refs';
-        delete \${'Carp::Always::WithRefs::'}{\$post};
-        goto &${class}::DESTROY
-          if defined &${class}::DESTROY;
-        ();
-      }
-    };
+    $attached{$id} = [ $ex, $class, $message ];
+    weaken $attached{$id}[0];
+
+    my $newclass = __PACKAGE__ . '::__ANON_' . $pack_suffix++ . '__';
+
+    {
+      no strict 'refs';
+      @{$newclass . '::ISA'} = ('Carp::Always::WithRefs::Attached', $class);
+    }
+
     bless $ex, $newclass;
     $ex;
   }
@@ -149,6 +138,58 @@ sub _convert {
     join('', @_, $message);
   }
 }
+
+sub _ex_info {
+  @{$attached{refaddr $_[0]}};
+}
+
+{
+  package Carp::Always::WithRefs::Attached;
+  use overload
+    fallback => 1,
+    'bool' => sub {
+      my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+      my $newclass = ref $ex;
+      bless $ex, $class;
+      my $out = !!$ex;
+      bless $ex, $newclass;
+      return $out;
+    },
+    '0+' => sub {
+      my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+      my $newclass = ref $ex;
+      bless $ex, $class;
+      my $out = 0+$ex;
+      bless $ex, $newclass;
+      return $out;
+    },
+    '""' => sub {
+      my ($ex, $class, $message) = Carp::Always::WithRefs::_ex_info(@_);
+      my $newclass = ref $ex;
+      bless $ex, $class;
+      my $out = "$ex" . $message;
+      bless $ex, $newclass;
+      return $out;
+    },
+  ;
+
+  sub DESTROY {
+    my ($ex, $class) = Carp::Always::WithRefs::_ex_info(@_);
+    my $newclass = ref $ex;
+    my ($post) = $newclass =~ s/([^:]+)$//;
+
+    bless $ex, $class;
+
+    no strict 'refs';
+    delete ${$newclass}{$post.'::'};
+
+    my $destroy = $ex->can('DESTROY');
+    goto &$destroy
+      if $destroy;
+    ();
+  }
+}
+
 
 1;
 __END__
