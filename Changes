@@ -1,3 +1,4 @@
+0.002000 - 2013-09-19
   - rename module from Carp::Always::AndRefs to Carp::Always::EvenObjects
   - some documentation tweaks
   - fix using Devel::Confess under debugger
