@@ -228,16 +228,17 @@ sub _ex_info {
   sub DESTROY {
     my ($ex, $class) = Carp::Always::AndRefs::_ex_info(@_);
     my $newclass = ref $ex;
-    my ($post) = $newclass =~ s/([^:]+)$//;
+    $newclass =~ s/([^:]+)$//;
+    my $post = $1;
+
+    {
+      no strict 'refs';
+      delete ${$newclass}{$post.'::'};
+    }
 
     bless $ex, $class;
 
-    no strict 'refs';
-    delete ${$newclass}{$post.'::'};
-
-    my $destroy = $ex->can('DESTROY');
-    goto &$destroy
-      if $destroy;
+    # after reblessing, perl will re-dispatch to the class's own DESTROY.
     ();
   }
 }
