@@ -28,6 +28,7 @@ my $old_verbose;
 
 my %options = (
   objects => 1,
+  hacks => 1,
 );
 
 sub import {
@@ -40,6 +41,12 @@ sub import {
 
   $options{$_->[1]} = $_->[2]
     for @opts;
+
+  if (exists $options{hacks}) {
+    require Carp::Always::WithRefs::Hacks;
+    my $do = $options{hacks} ? 'import' : 'unimport';
+    Carp::Always::WithRefs::Hacks->$do;
+  }
 
   return
     if keys %OLD_SIG;

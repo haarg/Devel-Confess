@@ -15,44 +15,57 @@ sub guard (&) {
   Carp::Always::WithRefs::Hacks::_Guard->new(@_);
 }
 
-$Carp::Always::WithRefs::NoTrace{'Exception::Class::Base'}++;
-{
-  my $guard = guard { Exception::Class::Base->Trace(1) };
-  if (!$INC{'Exception/Class/Base.pm'}) {
-    $Exception::Class::BASE_EXC_CLASS = $guard;
+my $enabled;
+sub import {
+  return
+    if ++$enabled;
+
+  $Carp::Always::WithRefs::NoTrace{'Exception::Class::Base'}++;
+  {
+    my $guard = guard { Exception::Class::Base->Trace(1) };
+    if (!$INC{'Exception/Class/Base.pm'}) {
+      $Exception::Class::BASE_EXC_CLASS = $guard;
+    }
+  }
+
+  $Carp::Always::WithRefs::NoTrace{'Ouch'}++;
+  {
+    my $guard = guard { overload::OVERLOAD('Ouch', '""', 'trace') };
+    if (!$INC{'Ouch.pm'}) {
+      $Ouch::EXPORT_OK = ($guard);
+    }
+  }
+
+  $Carp::Always::WithRefs::NoTrace{'Class::Throwable'}++;
+  {
+    my $guard = guard { $Class::Throwable::DEFAULT_VERBOSITY = 2 };
+    if (!$INC{'Class/Throwable.pm'}) {
+      $Class::Throwable::DEFAULT_VERBOSITY = $guard;
+    }
+  }
+
+  $Carp::Always::WithRefs::NoTrace{'Exception::Base'}++;
+  {
+    my $guard = guard { Exception::Base->import(verbosity => 3) };
+    if (!$INC{'Exception/Base.pm'}) {
+      overload::OVERLOAD('Exception::Base', '""', sub { $guard });
+    }
+  }
+
+  $Carp::Always::WithRefs::NoTrace{'Error'}++;
+  {
+    my $guard = guard { $Error::Debug = 1 };
+    if (!$INC{'Error.pm'}) {
+      $Error::Debug = $guard;
+    }
   }
 }
 
-$Carp::Always::WithRefs::NoTrace{'Ouch'}++;
-{
-  my $guard = guard { overload::OVERLOAD('Ouch', '""', 'trace') };
-  if (!$INC{'Ouch.pm'}) {
-    $Ouch::EXPORT_OK = ($guard);
-  }
-}
-
-$Carp::Always::WithRefs::NoTrace{'Class::Throwable'}++;
-{
-  my $guard = guard { $Class::Throwable::DEFAULT_VERBOSITY = 2 };
-  if (!$INC{'Class/Throwable.pm'}) {
-    $Class::Throwable::DEFAULT_VERBOSITY = $guard;
-  }
-}
-
-$Carp::Always::WithRefs::NoTrace{'Exception::Base'}++;
-{
-  my $guard = guard { Exception::Base->import(verbosity => 3) };
-  if (!$INC{'Exception/Base.pm'}) {
-    overload::OVERLOAD('Exception::Base', '""', sub { $guard });
-  }
-}
-
-$Carp::Always::WithRefs::NoTrace{'Error'}++;
-{
-  my $guard = guard { $Error::Debug = 1 };
-  if (!$INC{'Error.pm'}) {
-    $Error::Debug = $guard;
-  }
+sub unimport {
+  my $class = shift;
+  return unless $enabled;
+  require Carp;
+  Carp::croak("$class can't be disabled!");
 }
 
 1;
