@@ -22,6 +22,7 @@ my %META = (
     runtime => { requires => {
       'perl' => '5.6.0',
       'Carp' => 0,
+      'Scalar::Util' => 0,
     } },
   },
   resources => {
