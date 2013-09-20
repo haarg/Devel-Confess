@@ -3,6 +3,9 @@ use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
 
+our $VERSION = '0.002000';
+$VERSION = eval $VERSION;
+
 {
   package #hide
     Carp::Always::EvenObjects::Hacks::_Guard;
