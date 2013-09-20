@@ -1,3 +1,6 @@
+  - properly list Scalar::Util as a prereq
+  - fix tests on Windows
+
 0.002000 - 2013-09-19
   - rename module from Carp::Always::AndRefs to Carp::Always::EvenObjects
   - some documentation tweaks
