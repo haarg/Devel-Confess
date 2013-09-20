@@ -1,3 +1,4 @@
+0.002001 - 2013-09-20
   - properly list Scalar::Util as a prereq
   - fix tests on Windows
 
