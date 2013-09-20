@@ -15,11 +15,14 @@ sub capture ($) {
     print { $fh } $code;
     close $fh;
 
-    open3( my $in, my $out, undef, $^X, @PERL5OPTS, $filename)
+    open my $in, '<', File::Spec->devnull or die "can't open null: $!";
+    open3( $in, my $out, undef, $^X, @PERL5OPTS, $filename)
       or die "Couldn't open subprocess: $!\n";
     my $output = do { local $/; <$out> };
     close $in;
     close $out;
+
+    $output =~ s/\r\n?/\n/g;
 
     unlink $filename
       or die "Couldn't unlink $filename: $!\n";
