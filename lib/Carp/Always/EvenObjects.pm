@@ -72,6 +72,20 @@ sub import {
   $Carp::Verbose = 1;
 }
 
+sub _find_sig {
+  my $sig = $_[0];
+  return
+    if !defined $sig;
+  return $sig
+    if ref $sig && eval { \&{$sig} };
+  return undef
+    if $sig eq 'DEFAULT' || $sig eq 'IGNORE';
+  $sig = 'main::' . $sig
+    unless $sig =~ /::/;
+  no strict 'refs';
+  defined &{$sig} ? \&{$sig} : undef;
+}
+
 sub unimport {
   return
     unless keys %OLD_SIG;
@@ -93,7 +107,7 @@ END {
 
 sub _warn {
   my @convert = _convert(@_);
-  if (my $warn = $OLD_SIG{__WARN__}) {
+  if (my $warn = _find_sig($OLD_SIG{__WARN__})) {
     $warn->(@convert);
   }
   else {
@@ -102,7 +116,7 @@ sub _warn {
 }
 sub _die {
   my @convert = _convert(@_);
-  if (my $sig = $OLD_SIG{__DIE__}) {
+  if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
     $sig->(@convert);
   }
   else {
