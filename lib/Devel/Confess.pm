@@ -2,7 +2,7 @@ package Devel::Confess;
 use strict;
 use warnings FATAL => 'all';
 
-our $VERSION = '0.002001';
+our $VERSION = '0.002002';
 $VERSION = eval $VERSION;
 
 use Carp::Always::EvenObjects ();
