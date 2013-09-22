@@ -75,7 +75,15 @@ sub import {
 sub unimport {
   return
     unless keys %OLD_SIG;
-  @SIG{qw(__DIE__ __WARN__)} = delete @OLD_SIG{qw(__DIE__ __WARN__)};
+  for (qw(__DIE__ __WARN__)) {
+    my $sig = delete $OLD_SIG{$_};
+    if (defined $sig) {
+      $SIG{$_} = $sig;
+    }
+    else {
+      delete $SIG{$_};
+    }
+  }
 
   $Carp::Verbose = $old_verbose;
 }
