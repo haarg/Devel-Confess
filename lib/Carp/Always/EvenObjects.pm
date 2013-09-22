@@ -74,14 +74,14 @@ sub import {
 
 sub _find_sig {
   my $sig = $_[0];
-  return
+  return undef
     if !defined $sig;
   return $sig
     if ref $sig && eval { \&{$sig} };
   return undef
     if $sig eq 'DEFAULT' || $sig eq 'IGNORE';
-  $sig = 'main::' . $sig
-    unless $sig =~ /::/;
+  package #hide
+    main;
   no strict 'refs';
   defined &{$sig} ? \&{$sig} : undef;
 }
