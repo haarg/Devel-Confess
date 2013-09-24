@@ -14,7 +14,7 @@ BEGIN {
   # is a brute force debugging tool, so we can deal with it.
   *weaken = defined &Scalar::Util::weaken
     ? \&Scalar::Util::weaken : sub ($) { 0 };
-};
+}
 BEGIN {
   *_CARP_DOT = $Carp::VERSION && $Carp::VERSION >= 1.25 ? sub () {1} : sub () {0};
   if ($Carp::VERSION) {

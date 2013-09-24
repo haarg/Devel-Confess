@@ -18,6 +18,7 @@ if (!defined &DB::DB) {
 }
 
 1;
+__END__
 
 =head1 NAME
 
