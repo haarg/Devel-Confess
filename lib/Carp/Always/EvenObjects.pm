@@ -35,7 +35,6 @@ BEGIN {
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
 $NoTrace{'Moose::Error::Default'}++;
-$NoTrace{'Ouch'}++;
 
 my %OLD_SIG;
 my $old_verbose;
