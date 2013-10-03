@@ -6,69 +6,102 @@ no warnings 'once';
 our $VERSION = '0.002002';
 $VERSION = eval $VERSION;
 
+our $in_gd;
+END { $in_gd++ }
 {
   package #hide
     Carp::Always::EvenObjects::Hacks::_Guard;
   use overload bool => sub () { 0 };
-  sub new { bless [$_[1]], $_[0] }
-  sub DESTROY { $_[0][0]->() if @{$_[0]} }
+  sub new { bless [@_[1 .. $#_]], $_[0] }
+  sub DESTROY { return if $in_gd; $_->() for @{$_[0]} }
 }
 
-sub guard (&) {
-  Carp::Always::EvenObjects::Hacks::_Guard->new(@_);
-}
+our %HACKS = (
+  'Exception::Class::Base' => {
+    enable => sub { Exception::Class::Base->Trace(1) },
+    store => '$Exception::Class::BASE_EXC_CLASS',
+  },
+  'Ouch' => {
+    enable => sub { overload::OVERLOAD('Ouch', '""', 'trace') },
+    store => '@Ouch::EXPORT_OK',
+  },
+  'Class::Throwable' => {
+    enable => sub { $Class::Throwable::DEFAULT_VERBOSITY = 2 },
+    store => '$Class::Throwable::DEFAULT_VERBOSITY',
+  },
+  'Exception::Base' => {
+    enable => sub { Exception::Base->import(verbosity => 3) },
+    store => '$Exception::Base::_qualify_to_ref'
+  },
+  'Error' => {
+    enable => sub { $Error::Debug = 1 },
+    store => '$Error::Debug',
+  },
+);
 
-my $enabled;
 sub import {
-  return
-    if ++$enabled;
+  my ($class, @enable) = @_;
+  @enable = keys %HACKS
+    unless @enable;
 
-  $Carp::Always::EvenObjects::NoTrace{'Exception::Class::Base'}++;
-  {
-    my $guard = guard { Exception::Class::Base->Trace(1) };
-    if (!$INC{'Exception/Class/Base.pm'}) {
-      $Exception::Class::BASE_EXC_CLASS = $guard;
-    }
-  }
+  for my $class (@enable) {
+    my $hack = $HACKS{$class} or die "invalid class $class!";
+    next if $hack->{enabled};
 
-  $Carp::Always::EvenObjects::NoTrace{'Ouch'}++;
-  {
-    my $guard = guard { overload::OVERLOAD('Ouch', '""', 'trace') };
-    if (!$INC{'Ouch.pm'}) {
-      $Ouch::EXPORT_OK = ($guard);
+    (my $module = "$class.pm") =~ s{::}{/}g;
+    if ($INC{$module}) {
+      $hack->{enable}->();
+      $Carp::Always::EvenObjects::NoTrace{$class}++;
     }
-  }
+    else {
+      my $store = $hack->{store};
+      my $guard = Carp::Always::EvenObjects::Hacks::_Guard->new(
+        $hack->{enable},
+        sub { $Carp::Always::EvenObjects::NoTrace{$class}++ },
+      );
 
-  $Carp::Always::EvenObjects::NoTrace{'Class::Throwable'}++;
-  {
-    my $guard = guard { $Class::Throwable::DEFAULT_VERBOSITY = 2 };
-    if (!$INC{'Class/Throwable.pm'}) {
-      $Class::Throwable::DEFAULT_VERBOSITY = $guard;
+      if (ref $store) {
+        $store->($guard);
+      }
+      else {
+        eval $store . ' = $guard; 1' or die $@;
+      }
     }
-  }
 
-  $Carp::Always::EvenObjects::NoTrace{'Exception::Base'}++;
-  {
-    my $guard = guard { Exception::Base->import(verbosity => 3) };
-    if (!$INC{'Exception/Base.pm'}) {
-      overload::OVERLOAD('Exception::Base', '""', sub { $guard });
-    }
-  }
-
-  $Carp::Always::EvenObjects::NoTrace{'Error'}++;
-  {
-    my $guard = guard { $Error::Debug = 1 };
-    if (!$INC{'Error.pm'}) {
-      $Error::Debug = $guard;
-    }
+    $hack->{enabled}++;
   }
 }
 
 sub unimport {
-  my $class = shift;
-  return unless $enabled;
-  require Carp;
-  Carp::croak("$class can't be disabled!");
+  my ($class, @disable) = @_;
+  @disable = keys %HACKS
+    unless @disable;
+
+  for my $class (@disable) {
+    my $hack = $HACKS{$class} or die "invalid class $class!";
+    next unless $hack->{enabled};
+
+    (my $module = "$class.pm") =~ s{::}{/}g;
+    if ($INC{$module}) {
+      # can't really disable if it's already been loaded, so just do nothing
+    }
+    else {
+      my $store = $hack->{store};
+      if (ref $store) {
+        $hack->{disable}->();
+      }
+      else {
+        eval q{
+          my ($guard) = }.$store.q{;
+          @$guard = ();
+          }.$store.q{ = ();
+          1;
+        } or die $@;
+      }
+      $hack->{enabled}--;
+      $Carp::Always::EvenObjects::NoTrace{$class}--;
+    }
+  }
 }
 
 1;
