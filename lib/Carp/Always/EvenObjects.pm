@@ -9,6 +9,7 @@ $VERSION = eval $VERSION;
 use Carp ();
 use overload ();
 use Scalar::Util qw(blessed refaddr);
+use Symbol ();
 BEGIN {
   # fake weaken if it isn't available.  will cause leaks, but this
   # is a brute force debugging tool, so we can deal with it.
@@ -250,13 +251,8 @@ sub _ex_info {
   sub DESTROY {
     my ($ex, $class) = Carp::Always::EvenObjects::_ex_info(@_);
     my $newclass = ref $ex;
-    $newclass =~ s/([^:]+)$//;
-    my $post = $1;
 
-    {
-      no strict 'refs';
-      delete ${$newclass}{$post.'::'};
-    }
+    Symbol::delete_package($newclass);
 
     bless $ex, $class;
 
