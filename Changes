@@ -1,3 +1,4 @@
+0.003000 - 2013-10-04
   - Rename to Devel::Confess instead of having an alias
     (I am bad at naming things)
   - Ouch exceptions can now work without hacks
