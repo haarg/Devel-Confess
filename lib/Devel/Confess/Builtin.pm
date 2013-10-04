@@ -33,6 +33,7 @@ our %CLASS = (
   'Exception::Class::Base' => {
     enable => sub { Exception::Class::Base->Trace(1) },
     store => '$Exception::Class::BASE_EXC_CLASS',
+    check => sub { $_[0]->Trace },
   },
   'Ouch' => {
     enable => sub { overload::OVERLOAD('Ouch', '""', 'trace') },
@@ -41,6 +42,23 @@ our %CLASS = (
   'Class::Throwable' => {
     enable => sub { $Class::Throwable::DEFAULT_VERBOSITY = 2 },
     store => '$Class::Throwable::DEFAULT_VERBOSITY',
+    check => sub {
+      my $class = ref shift;
+      our $CT_VERBOSITY ||= do {
+        my $v;
+        my $pad = B::svref_2object(Class::Throwable->can('import'))->PADLIST;
+        for (0..$pad->ARRAYelt(0)->MAX) {
+          if ($pad->ARRAYelt(0)->ARRAYelt($_)->isa('B::PV')
+            && $pad->ARRAYelt(0)->ARRAYelt($_)->PV eq '%VERBOSITY') {
+            $v = $pad->ARRAYelt(1)->ARRAYelt($_)->object_2svref;
+          }
+        }
+        $v;
+      };
+      return exists $CT_VERBOSITY->{$class}
+        ? $CT_VERBOSITY->{$class}
+        : $Class::Throwable::DEFAULT_VERBOSITY;
+    },
   },
   'Exception::Base' => {
     enable => sub { Exception::Base->import(verbosity => 3) },
@@ -51,6 +69,7 @@ our %CLASS = (
         $Exception::Base::VERSION = $guard;
       });
     },
+    check => sub { $_[0]->verbosity >= 3 },
   },
 );
 
@@ -117,6 +136,16 @@ sub unimport {
       $Devel::Confess::NoTrace{$class}--;
     }
   }
+}
+
+sub check {
+  my ($class, $ex) = @_;
+  my $does = $ex->can('does') || $ex->can('DOES') || sub () { 0 };
+  for (grep { $HACKS{$_}{check} and $ex->isa($_) || $ex->$does($_) } keys %HACKS) {
+    return 1
+      if $HACKS{$_}{check}->($_);
+  }
+  return;
 }
 
 1;
