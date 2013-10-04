@@ -45,6 +45,7 @@ our %CLASS = (
     check => sub {
       my $class = ref shift;
       our $CT_VERBOSITY ||= do {
+        require B;
         my $v;
         my $pad = B::svref_2object(Class::Throwable->can('import'))->PADLIST;
         for (0..$pad->ARRAYelt(0)->MAX) {
