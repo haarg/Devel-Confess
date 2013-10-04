@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test::More tests => 2;
-use t::capture;
+use t::lib::capture;
 
 my $code = <<'END_CODE';
 package A;
@@ -35,12 +35,12 @@ END_OUTPUT
 
 
 {
-  local @t::capture::OPTS = ('-d:Confess');
+  local @CAPTURE_OPTS = ('-d:Confess');
   is capture $code, $output, 'Devel::Confess usable as a debugger';
 }
 
 {
-  local @t::capture::OPTS = ('-d', '-MDevel::Confess');
+  local @CAPTURE_OPTS = ('-d', '-MDevel::Confess');
   local $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=1';
   is capture $code, $debug_output, 'Devel::Confess usable with the debugger';
 }

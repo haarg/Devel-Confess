@@ -1,4 +1,4 @@
-package t::capture;
+package t::lib::capture;
 use strict;
 use warnings;
 
@@ -7,9 +7,9 @@ use IPC::Open3;
 use File::Spec;
 use base qw(Exporter);
 
-our @EXPORT = qw(capture);
+our @EXPORT = qw(capture *CAPTURE_OPTS);
 
-our @OPTS;
+our @CAPTURE_OPTS;
 my @PERL5OPTS = map "-I$_", @INC;
 
 sub capture ($) {
@@ -21,7 +21,7 @@ sub capture ($) {
     close $fh;
 
     open my $in, '<', File::Spec->devnull or die "can't open null: $!";
-    open3( $in, my $out, undef, $^X, @PERL5OPTS, @OPTS, $filename)
+    open3( $in, my $out, undef, $^X, @PERL5OPTS, @CAPTURE_OPTS, $filename)
       or die "Couldn't open subprocess: $!\n";
     my $output = do { local $/; <$out> };
     close $in;
