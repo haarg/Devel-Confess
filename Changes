@@ -1,5 +1,6 @@
   - Rename to Devel::Confess instead of having an alias
     (I am bad at naming things)
+  - Ouch exceptions can now work without hacks
 
 0.002002 - 2013-09-21
   - fix 5.8 compatibility
