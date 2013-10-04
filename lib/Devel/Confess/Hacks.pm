@@ -1,4 +1,4 @@
-package Carp::Always::EvenObjects::Hacks;
+package Devel::Confess::Hacks;
 use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
@@ -6,14 +6,27 @@ no warnings 'once';
 our $VERSION = '0.002002';
 $VERSION = eval $VERSION;
 
-our $in_gd;
-END { $in_gd++ }
+{
+  our $gd;
+  sub _global_destruction () {
+    if (!$gd) {
+      local $SIG{__WARN__} = sub { $gd = $_[0] =~ /global destruction\.\n\z/ };
+      warn 1;
+    }
+    $gd;
+  }
+}
+
 {
   package #hide
-    Carp::Always::EvenObjects::Hacks::_Guard;
+    Devel::Confess::Hacks::_Guard;
   use overload bool => sub () { 0 };
   sub new { bless [@_[1 .. $#_]], $_[0] }
-  sub DESTROY { return if $in_gd; $_->() for @{$_[0]} }
+  sub DESTROY {
+    return
+      if Devel::Confess::Hacks::_global_destruction;
+    $_->() for @{$_[0]}
+  }
 }
 
 our %HACKS = (
@@ -51,13 +64,13 @@ sub import {
     (my $module = "$class.pm") =~ s{::}{/}g;
     if ($INC{$module}) {
       $hack->{enable}->();
-      $Carp::Always::EvenObjects::NoTrace{$class}++;
+      $Devel::Confess::NoTrace{$class}++;
     }
     else {
       my $store = $hack->{store};
-      my $guard = Carp::Always::EvenObjects::Hacks::_Guard->new(
+      my $guard = Devel::Confess::Hacks::_Guard->new(
         $hack->{enable},
-        sub { $Carp::Always::EvenObjects::NoTrace{$class}++ },
+        sub { $Devel::Confess::NoTrace{$class}++ },
       );
 
       if (ref $store) {
@@ -99,7 +112,7 @@ sub unimport {
         } or die $@;
       }
       $hack->{enabled}--;
-      $Carp::Always::EvenObjects::NoTrace{$class}--;
+      $Devel::Confess::NoTrace{$class}--;
     }
   }
 }
@@ -109,11 +122,11 @@ __END__
 
 =head1 NAME
 
-Carp::Always::EvenObjects::Hacks - Enable built in stack traces on exception objects
+Devel::Confess::Hacks - Enable built in stack traces on exception objects
 
 =head1 SYNOPSIS
 
-  use Carp::Always::EvenObjects::Hacks;
+  use Devel::Confess::Hacks;
   use Exception::Class 'MyException';
 
   MyException->throw; # includes stack trace

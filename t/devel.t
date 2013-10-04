@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 3;
+use Test::More tests => 2;
 use t::capture;
 
 my $code = <<'END_CODE';
@@ -33,11 +33,6 @@ my $debug_output = $output . <<'END_OUTPUT';
 	A::g() called at test-block.pl line 3
 END_OUTPUT
 
-
-{
-  local @t::capture::OPTS = ('-MDevel::Confess');
-  is capture $code, $output, 'Devel::Confess usable as a normal module';
-}
 
 {
   local @t::capture::OPTS = ('-d:Confess');

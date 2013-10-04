@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 (do 'maint/Makefile.PL.include' or die $@) unless -f 'META.yml';
 
 my %META = (
-  name => 'Carp::Always::EvenObjects',
+  name => 'Devel::Confess',
   license => 'perl_5',
   dynamic_config => 0,
   prereqs => {
@@ -27,13 +27,13 @@ my %META = (
   },
   resources => {
     repository => {
-      url => 'git://github.com/haarg/Carp-Always-EvenObjects',
-      web => 'https://github.com/haarg/Carp-Always-EvenObjects',
+      url => 'git://github.com/haarg/Devel-Confess',
+      web => 'https://github.com/haarg/Devel-Confess',
       type => 'git',
     },
     bugtracker => {
-      web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Carp-Always-EvenObjects',
-      mailto => 'bug-Carp-Always-EvenObjects@rt.cpan.org',
+      web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=Devel-Confess',
+      mailto => 'bug-Devel-Confess@rt.cpan.org',
     },
     license => [ 'http://dev.perl.org/licenses/' ],
   },
