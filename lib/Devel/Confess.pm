@@ -140,7 +140,7 @@ sub _convert {
     return @_
       if $attached{$id};
 
-    my $does = $ex->can('DOES') || sub () { 0 };
+    my $does = $ex->can('does') || $ex->can('DOES') || sub () { 0 };
     if (
       grep {
         $NoTrace{$_}
