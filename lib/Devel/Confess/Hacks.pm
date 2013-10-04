@@ -139,6 +139,9 @@ modules as possible to include stack traces by default.  It can be
 loaded before or after the exception modules, and it will still
 function.
 
+For supported modules, it will also prevent L<Devel::Confess>
+from attaching its own stack traces.
+
 =head1 SUPPORTED MODULES
 
 =over 4
