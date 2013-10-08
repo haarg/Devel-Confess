@@ -132,6 +132,7 @@ sub CLONE {
 }
 
 sub _convert {
+  __PACKAGE__->CLONE;
   if (my $class = blessed $_[0]) {
     return @_
       unless $options{objects};
@@ -216,6 +217,9 @@ sub _convert {
 my $_ex_info = sub {
   @{$attached{refaddr $_[0]}};
 };
+my $_delete_ex_info = sub {
+  @{ delete $attached{refaddr $_[0]} };
+};
 
 {
   package #hide
@@ -249,7 +253,7 @@ my $_ex_info = sub {
   ;
 
   sub DESTROY {
-    my ($ex, $class) = $_ex_info->(@_);
+    my ($ex, $class) = $_delete_ex_info->(@_);
     my $newclass = ref $ex;
 
     Symbol::delete_package($newclass);

@@ -24,10 +24,10 @@ my $gone = 0;
 eval {
   MyException->throw;
 };
+my $class = ref $@;
 is $gone, 0, "exception not destroyed when captured";
 undef $@;
 is $gone, 1, "exception destroyed after \$@ cleared";
 
-ok !(grep { /^__ANON_\w+__::$/ } keys %Devel::Confess::),
-  "temp packages don't leak";
+ok !UNIVERSAL::can($class, 'DESTROY'), "temp packages don't leak";
 
