@@ -1,3 +1,8 @@
+  - fix compatibility with perl 5.6
+  - fix some minor memory leaks
+  - trigger overloads more carefully
+  - check roles using ->does as well as ->DOES
+
 0.003000 - 2013-10-04
   - Rename to Devel::Confess instead of having an alias
     (I am bad at naming things)
