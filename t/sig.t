@@ -4,7 +4,7 @@ use Test::More tests => 8;
 
 use Devel::Confess ();
 
-is $SIG{__DIE__}, undef, 'not activated without import';
+ok !$SIG{__DIE__}, 'not activated without import';
 my $called;
 sub CALLED { $called++ };
 $SIG{__DIE__} = \&CALLED;
