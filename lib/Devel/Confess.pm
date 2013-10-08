@@ -234,7 +234,7 @@ my $_ex_info = sub {
       my ($ex, $class) = $_ex_info->(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
-      my $out = 0+$ex;
+      my $out = 0+sprintf '%f', $ex;
       bless $ex, $newclass;
       return $out;
     },
