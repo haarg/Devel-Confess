@@ -2,8 +2,10 @@ use strict;
 use warnings;
 use Test::More tests => 2;
 use t::lib::capture;
+use Cwd qw(cwd);
 
 my $code = <<'END_CODE';
+BEGIN { print STDERR "started\n" }
 package A;
 
 sub f {
@@ -22,25 +24,28 @@ package main;
 A::g();
 END_CODE
 
-my $output = <<'END_OUTPUT';
+my $expected = <<'END_OUTPUT';
 Beware! at test-block.pl line 1.
 	A::f() called at test-block.pl line 2
 	A::g() called at test-block.pl line 3
 END_OUTPUT
-my $debug_output = $output . <<'END_OUTPUT';
- at test-block.pl line 1.
-	A::f() called at test-block.pl line 2
-	A::g() called at test-block.pl line 3
-END_OUTPUT
-
 
 {
   local @CAPTURE_OPTS = ('-d:Confess');
-  is capture $code, $output, 'Devel::Confess usable as a debugger';
+  my $out = capture $code;
+  $out =~ s/\A.*?^started\s+//ms;
+  is $out, $expected, 'Devel::Confess usable as a debugger';
 }
 
 {
   local @CAPTURE_OPTS = ('-d', '-MDevel::Confess');
-  local $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=1';
-  is capture $code, $debug_output, 'Devel::Confess usable with the debugger';
+
+  local %ENV = %ENV;
+  delete $ENV{$_} for grep /^PERL5?DB/, keys %ENV;
+  delete $ENV{LOGDIR};
+  $ENV{HOME} = cwd;
+  $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=0';
+  my $out = capture $code;
+  $out =~ s/\A.*?^started\s+//ms;
+  is $out, $expected, 'Devel::Confess usable with the debugger';
 }
