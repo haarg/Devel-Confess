@@ -41,7 +41,7 @@ my $old_verbose;
 
 my %options = (
   objects => 1,
-  hacks => 1,
+  hacks => 0,
 );
 
 sub import {
