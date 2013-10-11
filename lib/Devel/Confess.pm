@@ -20,6 +20,38 @@ BEGIN {
   if ($Carp::VERSION) {
     $Carp::Internal{+__PACKAGE__}++;
     *_longmess = \&Carp::longmess;
+    if ($Carp::VERSION < 1.32) {
+      my $format_arg = \&Carp::format_arg;
+      eval q{
+        package
+          Carp;
+        our $in_recurse;
+        no warnings 'redefine';
+        sub format_arg {
+          if (! $in_recurse) {
+            local $SIG{__DIE__} = sub {};
+            local $in_recurse = 1;
+            local $@;
+
+            my $arg;
+            if (
+              Scalar::Util::blessed($_[0])
+              && eval { $_[0]->can('CARP_TRACE') }
+            ) {
+              return $_[0]->CARP_TRACE;
+            }
+            elsif (
+              ref $_[0]
+              && our $RefArgFormatter
+              && eval { $arg = $RefArgFormatter->(@_); 1 }
+            ) {
+              return $arg;
+            }
+          }
+          $format_arg->(@_);
+        }
+      };
+    }
   }
   else {
     *_longmess = sub {
