@@ -339,12 +339,12 @@ with no_ to disable them.
 
 =item C<objects>
 
-Enable attaching stack traces to exception objects.  Defaults to on.
+Enable attaching stack traces to exception objects.  Enabled by default.
 
 =item C<hacks>
 
 Load the L<Devel::Confess::Hacks> module to use built in
-stack traces on supported exception types.
+stack traces on supported exception types.  Disabled by default.
 
 =back
 
