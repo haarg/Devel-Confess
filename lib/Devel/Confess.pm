@@ -41,6 +41,7 @@ my %options = (
   objects => 1,
   hacks => undef,
   dump => 0,
+  color => 0,
 );
 
 sub import {
@@ -105,6 +106,7 @@ sub _warn {
     $warn->(@convert);
   }
   else {
+    _colorize(\@convert, 33) if $options{color};
     warn @convert;
   }
 }
@@ -114,7 +116,24 @@ sub _die {
     $sig->(@convert);
   }
   else {
+    _colorize(\@convert, 31) if $options{color};
     die @convert;
+  }
+}
+
+sub _colorize {
+  my ($convert, $color) = @_;
+  if (!$^S && -t *STDERR) {
+    if (blessed $convert->[0]) {
+      if ($convert->[0]->isa('Devel::Confess::_Attached')) {
+        splice @$convert, 0, 1, $convert->[0]->__ex_as_string;
+      }
+      else {
+        $convert->[0] =~ s/(.*)/\e[${color}m$1\e[m/;
+        return;
+      }
+    }
+    $convert->[0] = "\e[${color}m$convert->[0]\e[m";
   }
 }
 
@@ -190,7 +209,7 @@ sub _convert {
       $info;
     };
 
-    return($^S ? @_ : join('', @_, $info->[2]));
+    return ($^S ? @_ : ( @_, $info->[2] ));
   }
   elsif ((caller(1))[0] eq 'Carp') {
     my $out = join('', @_);
@@ -198,7 +217,7 @@ sub _convert {
     my $long = _longmess();
     $out =~ s/(.*)(?:\Q$long\E| at .*? line .*?\n)\z/$1/;
 
-    return $out . _stack_trace();
+    return ($out, _stack_trace());
   }
   else {
     my $message = _stack_trace();
@@ -206,7 +225,7 @@ sub _convert {
     my $where = $1;
     my $out = join('', @_);
     $out =~ s/\Q$where\E\z//;
-    return $out . $where . $message;
+    return ($out, $where . $message);
   }
 }
 
@@ -247,6 +266,15 @@ my $_delete_ex_info = sub {
       return $out;
     },
   ;
+
+  sub __ex_as_strings {
+    my ($ex, $class, $message) = $_ex_info->(@_);
+    my $newclass = ref $ex;
+    bless $ex, $class;
+    my $out = "$ex";
+    bless $ex, $newclass;
+    return ($out, $message);
+  }
 
   sub DESTROY {
     my ($ex, $class) = $_delete_ex_info->(@_);
@@ -346,6 +374,10 @@ stack traces on supported exception types.  Disabled by default.
 
 Dumps the contents of references in arguments in stack trace, instead
 of only showing their stringified version.  Disabled by default.
+
+=item C<color>
+
+Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 =back
 
