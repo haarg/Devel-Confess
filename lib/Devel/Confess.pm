@@ -25,10 +25,10 @@ BEGIN {
   else {
     *_longmess = sub {
       my $level = 0;
-      $level++ while ((caller($level))[0] =~ /^Carp(?:::|$)/);
+      $level++ while ((caller($level))[0] =~ /^Carp(?:::|$)|^Devel::Confess/);
       local $Carp::CarpLevel = $Carp::CarpLevel + $level;
       &Carp::longmess;
-    }
+    };
   }
 }
 
