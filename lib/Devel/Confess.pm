@@ -105,7 +105,7 @@ sub _die {
 
 sub _colorize {
   my ($convert, $color) = @_;
-  if (!$^S && -t *STDERR) {
+  if (!$^S && ($ENV{DEVEL_CONFESS_COLOR} || -t *STDERR )) {
     if (blessed $convert->[0]) {
       if ($convert->[0]->isa('Devel::Confess::_Attached')) {
         splice @$convert, 0, 1, $convert->[0]->__ex_as_string;
