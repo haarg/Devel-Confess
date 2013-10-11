@@ -8,60 +8,10 @@ $VERSION = eval $VERSION;
 
 use Carp ();
 use overload ();
-use Scalar::Util qw(blessed refaddr);
 use Symbol ();
-BEGIN {
-  # fake weaken if it isn't available.  will cause leaks, but this
-  # is a brute force debugging tool, so we can deal with it.
-  *weaken = defined &Scalar::Util::weaken
-    ? \&Scalar::Util::weaken : sub ($) { 0 };
-}
-BEGIN {
-  if ($Carp::VERSION) {
-    $Carp::Internal{+__PACKAGE__}++;
-    *_longmess = \&Carp::longmess;
-    if ($Carp::VERSION < 1.32) {
-      my $format_arg = \&Carp::format_arg;
-      eval q{
-        package
-          Carp;
-        our $in_recurse;
-        no warnings 'redefine';
-        sub format_arg {
-          if (! $in_recurse) {
-            local $SIG{__DIE__} = sub {};
-            local $in_recurse = 1;
-            local $@;
+use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
-            my $arg;
-            if (
-              Scalar::Util::blessed($_[0])
-              && eval { $_[0]->can('CARP_TRACE') }
-            ) {
-              return $_[0]->CARP_TRACE;
-            }
-            elsif (
-              ref $_[0]
-              && our $RefArgFormatter
-              && eval { $arg = $RefArgFormatter->(@_); 1 }
-            ) {
-              return $arg;
-            }
-          }
-          $format_arg->(@_);
-        }
-      };
-    }
-  }
-  else {
-    *_longmess = sub {
-      my $level = 0;
-      $level++ while ((caller($level))[0] =~ /^Carp(?:::|$)|^Devel::Confess/);
-      local $Carp::CarpLevel = $Carp::CarpLevel + $level;
-      &Carp::longmess;
-    };
-  }
-}
+$Carp::Internal{'Devel::Confess'}++;
 
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
@@ -184,7 +134,7 @@ sub _stack_trace {
   no warnings 'once';
   local $Carp::RefArgFormatter = \&_ref_formatter
     if $options{dump};
-  my $message = &_longmess;
+  my $message = &longmess;
   $message =~ s/\.?$/./m;
   $message;
 }
@@ -246,7 +196,7 @@ sub _convert {
   elsif ((caller(1))[0] eq 'Carp') {
     my $out = join('', @_);
 
-    my $long = _longmess();
+    my $long = longmess();
     $out =~ s/(.*)(?:\Q$long\E| at .*? line .*?\n)\z/$1/;
 
     return ($out, _stack_trace());
