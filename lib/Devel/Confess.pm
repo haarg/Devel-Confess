@@ -41,13 +41,13 @@ my $old_verbose;
 
 my %options = (
   objects => 1,
-  hacks => 0,
+  hacks => undef,
 );
 
 sub import {
   my $class = shift;
 
-  my @opts = map { /^-?(no_)?(.*)/; [ $_, $2, !$1 ] } @_;
+  my @opts = map { /^-?(no_)?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
   if (my @bad = grep { !exists $options{$_->[1]} } @opts) {
     Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
   }
@@ -55,7 +55,7 @@ sub import {
   $options{$_->[1]} = $_->[2]
     for @opts;
 
-  if (exists $options{hacks}) {
+  if (defined $options{hacks}) {
     require Devel::Confess::Hacks;
     my $do = $options{hacks} ? 'import' : 'unimport';
     Devel::Confess::Hacks->$do;
