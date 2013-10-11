@@ -34,6 +34,7 @@ sub _parse_options {
       builtin => undef,
       dump => 0,
       color => 0,
+      source => 0,
     );
     local $@;
     eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
@@ -57,6 +58,9 @@ sub import {
     require Devel::Confess::Builtin;
     my $do = $OPTIONS{builtin} ? 'import' : 'unimport';
     Devel::Confess::Builtin->$do;
+  }
+  if ($OPTIONS{source}) {
+    require Carp::Source;
   }
 
   return
@@ -154,6 +158,22 @@ sub _stack_trace {
     if $OPTIONS{dump};
   my $message = &longmess;
   $message =~ s/\.?$/./m;
+  if ($OPTIONS{source}) {
+    require SelectSaver;
+    my $source = '';
+    open my $fh, '>', \$source;
+    my $s = SelectSaver->new($fh);
+    my $level = 1;
+    while(1) {
+      my $p = (caller($level))[0];
+      last
+        unless $Carp::Internal{$p} || $Carp::CarpInternal{$p}
+          || $p =~ /^Carp(?:::|$)|^Devel::Confess/;
+      $level++;
+    }
+    my $x = Carp::Source::ret_backtrace($level-1, '');
+    $message .= $source;
+  }
   $message;
 }
 
@@ -369,6 +389,11 @@ of only showing their stringified version.  Disabled by default.
 =item C<color>
 
 Colorizes error messages in red and warnings in yellow.  Disabled by default.
+
+=item C<source>
+
+Includes a snippet of the source for each level of the stack trace.
+Requires the L<Carp::Source> module.  Disabled by default.
 
 =back
 
