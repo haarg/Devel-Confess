@@ -44,8 +44,8 @@ END_OUTPUT
   delete $ENV{$_} for grep /^PERL5?DB/, keys %ENV;
   delete $ENV{LOGDIR};
   $ENV{HOME} = cwd;
-  $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=0';
+  $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=1';
   my $out = capture $code;
   $out =~ s/\A.*?^started\s+//ms;
-  is $out, $expected, 'Devel::Confess usable with the debugger';
+  like $out, qr/^\Q$expected/, 'Devel::Confess usable with the debugger';
 }
