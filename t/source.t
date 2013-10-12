@@ -1,8 +1,6 @@
 use strict;
 use warnings;
-use Test::More
-  eval { require Carp::Source } ? (tests => 3)
-    : skip_all => "source feature requires Carp::Source";
+use Test::More tests => 3;
 
 use Devel::Confess qw(source);
 

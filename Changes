@@ -1,5 +1,4 @@
   - add source option to dump source of code surrounding trace.
-    Requires Carp::Source.
 
 0.004000 - 2013-11-05
   - rename 'hacks' option and module to 'builtin'

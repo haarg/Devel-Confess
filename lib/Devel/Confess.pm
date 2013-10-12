@@ -60,7 +60,7 @@ sub import {
     Devel::Confess::Builtin->$do;
   }
   if ($OPTIONS{source}) {
-    require Carp::Source;
+    require Devel::Confess::Source;
   }
 
   return
@@ -159,20 +159,7 @@ sub _stack_trace {
   my $message = &longmess;
   $message =~ s/\.?$/./m;
   if ($OPTIONS{source}) {
-    require SelectSaver;
-    my $source = '';
-    open my $fh, '>', \$source;
-    my $s = SelectSaver->new($fh);
-    my $level = 1;
-    while(1) {
-      my $p = (caller($level))[0];
-      last
-        unless $Carp::Internal{$p} || $Carp::CarpInternal{$p}
-          || $p =~ /^Carp(?:::|$)|^Devel::Confess/;
-      $level++;
-    }
-    my $x = Carp::Source::ret_backtrace($level-1, '');
-    $message .= $source;
+    $message .= Devel::Confess::Source::source_trace(1);
   }
   $message;
 }
@@ -393,7 +380,8 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 =item C<source>
 
 Includes a snippet of the source for each level of the stack trace.
-Requires the L<Carp::Source> module.  Disabled by default.
+Source traces may be inaccurate unless used as a debugger
+(C<perl -d:Confess=source>).  Disabled by default.
 
 =back
 
