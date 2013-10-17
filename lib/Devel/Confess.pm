@@ -266,8 +266,8 @@ sub _ex_as_strings {
 }
 
 # allow -d:Confess
-if (!defined &DB::DB) {
-  *DB::DB = sub {};
+if (!defined &DB::DB && $^P) {
+  $^P = 0;
 }
 
 1;
