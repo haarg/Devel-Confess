@@ -3,6 +3,8 @@ use 5.006;
 use strict;
 use warnings FATAL => 'all';
 
+$^P |= 0x100 | 0x400;
+
 sub source_trace {
   my ($skip, $context) = @_;
   $skip ||= 1;

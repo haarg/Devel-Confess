@@ -379,9 +379,8 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 =item C<source>
 
-Includes a snippet of the source for each level of the stack trace.
-Source traces may be inaccurate unless used as a debugger
-(C<perl -d:Confess=source>).  Disabled by default.
+Includes a snippet of the source for each level of the stack trace. Disabled
+by default.
 
 =back
 
