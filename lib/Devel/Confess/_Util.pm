@@ -60,8 +60,8 @@ if ($Carp::VERSION && $Carp::VERSION < 1.32) {
         }
         elsif (
           ref $_[0]
-          && our $RefArgFormatter
-          && eval { $arg = $RefArgFormatter->(@_); 1 }
+          and our $RefArgFormatter
+          and eval { $arg = $RefArgFormatter->(@_); 1 }
         ) {
           return $arg;
         }

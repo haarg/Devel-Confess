@@ -29,7 +29,7 @@ my %options = (
 sub import {
   my $class = shift;
 
-  my @opts = map { /^-?(no_)?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
+  my @opts = map { /^-?(no[_-])?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
   if (my @bad = grep { !exists $options{$_->[1]} } @opts) {
     Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
   }
