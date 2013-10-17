@@ -108,7 +108,7 @@ sub _colorize {
   if (!$^S && ($ENV{DEVEL_CONFESS_COLOR} || -t *STDERR )) {
     if (blessed $convert->[0]) {
       if ($convert->[0]->isa('Devel::Confess::_Attached')) {
-        splice @$convert, 0, 1, $convert->[0]->__ex_as_string;
+        splice @$convert, 0, 1, _ex_as_strings($convert->[0]);
       }
       else {
         $convert->[0] =~ s/(.*)/\e[${color}m$1\e[m/;
@@ -211,12 +211,20 @@ sub _convert {
   }
 }
 
-my $_ex_info = sub {
+sub _ex_info {
   @{$attached{refaddr $_[0]}};
-};
-my $_delete_ex_info = sub {
+}
+sub _delete_ex_info {
   @{ delete $attached{refaddr $_[0]} };
-};
+}
+sub _ex_as_strings {
+  my ($ex, $class, $message) = _ex_info(@_);
+  my $newclass = ref $ex;
+  bless $ex, $class;
+  my $out = "$ex";
+  bless $ex, $newclass;
+  return ($out, $message);
+}
 
 {
   package #hide
@@ -224,7 +232,7 @@ my $_delete_ex_info = sub {
   use overload
     fallback => 1,
     'bool' => sub {
-      my ($ex, $class) = $_ex_info->(@_);
+      my ($ex, $class) = Devel::Confess::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = !!$ex;
@@ -232,7 +240,7 @@ my $_delete_ex_info = sub {
       return $out;
     },
     '0+' => sub {
-      my ($ex, $class) = $_ex_info->(@_);
+      my ($ex, $class) = Devel::Confess::_ex_info(@_);
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = 0+sprintf '%f', $ex;
@@ -240,26 +248,12 @@ my $_delete_ex_info = sub {
       return $out;
     },
     '""' => sub {
-      my ($ex, $class, $message) = $_ex_info->(@_);
-      my $newclass = ref $ex;
-      bless $ex, $class;
-      my $out = "$ex" . $message;
-      bless $ex, $newclass;
-      return $out;
+      return join('', Devel::Confess::_ex_as_strings(@_));
     },
   ;
 
-  sub __ex_as_strings {
-    my ($ex, $class, $message) = $_ex_info->(@_);
-    my $newclass = ref $ex;
-    bless $ex, $class;
-    my $out = "$ex";
-    bless $ex, $newclass;
-    return ($out, $message);
-  }
-
   sub DESTROY {
-    my ($ex, $class) = $_delete_ex_info->(@_);
+    my ($ex, $class) = Devel::Confess::_delete_ex_info(@_);
     my $newclass = ref $ex;
 
     Symbol::delete_package($newclass);
