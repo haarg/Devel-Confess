@@ -11,7 +11,13 @@ use overload ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
-$Carp::Internal{'Devel::Confess'}++;
+# detect -d:Confess.  we don't use any debugger features (by default), so
+# disable them.
+if (!defined &DB::DB && $^P & 0x02) {
+  $^P = 0;
+}
+
+$Carp::Internal{+__PACKAGE__}++;
 
 our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
@@ -263,11 +269,6 @@ sub _ex_as_strings {
     # after reblessing, perl will re-dispatch to the class's own DESTROY.
     ();
   }
-}
-
-# allow -d:Confess
-if (!defined &DB::DB && $^P) {
-  $^P = 0;
 }
 
 1;
