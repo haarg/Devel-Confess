@@ -3,7 +3,7 @@ use warnings;
 use Test::More tests => 1;
 use t::lib::capture;
 
-$ENV{DEVEL_CONFESS_COLOR} = 1;
+$ENV{DEVEL_CONFESS_FORCE_COLOR} = 1;
 my $code = <<'END_CODE';
 package A;
 
