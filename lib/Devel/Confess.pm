@@ -10,8 +10,8 @@ use Carp ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
-# detect -d:Confess.  we don't use any debugger features (by default), so
-# disable them.
+# detect -d:Confess.  disable debugger features for now.  we'll
+# enable them when we need them.
 if (!defined &DB::DB && $^P & 0x02) {
   $^P = 0;
 }
