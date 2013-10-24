@@ -7,7 +7,6 @@ our $VERSION = '0.003001';
 $VERSION = eval $VERSION;
 
 use Carp ();
-use overload ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
@@ -23,29 +22,38 @@ our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
 $NoTrace{'Moose::Error::Default'}++;
 
-my %OLD_SIG;
+our %OPTIONS;
 
-my %options = (
-  objects => 1,
-  hacks => undef,
-  dump => 0,
-  color => 0,
-);
+sub _parse_options {
+  my @opts = map { /^-?(no[_-])?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
+  if (!keys %OPTIONS) {
+    %OPTIONS = (
+      objects => 1,
+      hacks => undef,
+      dump => 0,
+      color => 0,
+    );
+    local $@;
+    eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
+      or warn $@;
+  }
+  if (my @bad = grep { !exists $OPTIONS{$_->[1]} } @opts) {
+    Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
+  }
+  $OPTIONS{$_->[1]} = $_->[2]
+    for @opts;
+}
+
+my %OLD_SIG;
 
 sub import {
   my $class = shift;
 
-  my @opts = map { /^-?(no[_-])?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
-  if (my @bad = grep { !exists $options{$_->[1]} } @opts) {
-    Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
-  }
+  _parse_options(@_);
 
-  $options{$_->[1]} = $_->[2]
-    for @opts;
-
-  if (defined $options{hacks}) {
+  if (defined $OPTIONS{hacks}) {
     require Devel::Confess::Hacks;
-    my $do = $options{hacks} ? 'import' : 'unimport';
+    my $do = $OPTIONS{hacks} ? 'import' : 'unimport';
     Devel::Confess::Hacks->$do;
   }
 
@@ -94,7 +102,7 @@ sub _warn {
     $warn->(@convert);
   }
   else {
-    _colorize(\@convert, 33) if $options{color};
+    _colorize(\@convert, 33) if $OPTIONS{color};
     warn @convert;
   }
 }
@@ -104,7 +112,7 @@ sub _die {
     $sig->(@convert);
   }
   else {
-    _colorize(\@convert, 31) if $options{color};
+    _colorize(\@convert, 31) if $OPTIONS{color};
     die @convert;
   }
 }
@@ -139,7 +147,7 @@ sub _ref_formatter {
 sub _stack_trace {
   no warnings 'once';
   local $Carp::RefArgFormatter = \&_ref_formatter
-    if $options{dump};
+    if $OPTIONS{dump};
   my $message = &longmess;
   $message =~ s/\.?$/./m;
   $message;
@@ -156,7 +164,7 @@ sub _convert {
   __PACKAGE__->CLONE;
   if (my $class = blessed $_[0]) {
     return @_
-      unless $options{objects};
+      unless $OPTIONS{objects};
     my $ex = $_[0];
     my $id = refaddr($ex);
     return @_
