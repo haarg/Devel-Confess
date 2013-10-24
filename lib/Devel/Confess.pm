@@ -60,6 +60,9 @@ sub import {
   return
     if keys %OLD_SIG;
 
+  # enable better names for evals and anon subs
+  $^P |= 0x100 | 0x200;
+
   @OLD_SIG{qw(__DIE__ __WARN__)} = @SIG{qw(__DIE__ __WARN__)};
   $SIG{__DIE__} = \&_die;
   $SIG{__WARN__} = \&_warn;
