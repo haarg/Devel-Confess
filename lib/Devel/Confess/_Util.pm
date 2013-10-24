@@ -38,7 +38,7 @@ use Scalar::Util qw(blessed refaddr);
   };
 };
 
-if ($Carp::VERSION && $Carp::VERSION < 1.32) {
+if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   my $format_arg = \&Carp::format_arg;
   eval q{
     package
