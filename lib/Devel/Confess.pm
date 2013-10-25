@@ -165,10 +165,9 @@ sub CLONE {
 
 sub _convert {
   __PACKAGE__->CLONE;
-  if (my $class = blessed $_[0]) {
+  if (my $class = blessed(my $ex = $_[0])) {
     return @_
       unless $OPTIONS{objects};
-    my $ex = $_[0];
     my $id = refaddr($ex);
     return @_
       if $attached{$id};
@@ -199,7 +198,7 @@ sub _convert {
     bless $ex, $newclass;
     $ex;
   }
-  elsif (ref(my $ex = $_[0])) {
+  elsif (ref($ex = $_[0])) {
     my $id = refaddr($ex);
     my $info = $attached{$id} ||= do {
       my $message = _stack_trace;
