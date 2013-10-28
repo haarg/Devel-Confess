@@ -29,7 +29,7 @@ sub _parse_options {
   if (!keys %OPTIONS) {
     %OPTIONS = (
       objects => 1,
-      hacks => undef,
+      builtin => undef,
       dump => 0,
       color => 0,
     );
@@ -51,10 +51,10 @@ sub import {
 
   _parse_options(@_);
 
-  if (defined $OPTIONS{hacks}) {
-    require Devel::Confess::Hacks;
-    my $do = $OPTIONS{hacks} ? 'import' : 'unimport';
-    Devel::Confess::Hacks->$do;
+  if (defined $OPTIONS{builtin}) {
+    require Devel::Confess::Builtin;
+    my $do = $OPTIONS{builtin} ? 'import' : 'unimport';
+    Devel::Confess::Builtin->$do;
   }
 
   return
@@ -352,9 +352,9 @@ with no_ to disable them.
 
 Enable attaching stack traces to exception objects.  Enabled by default.
 
-=item C<hacks>
+=item C<builtin>
 
-Load the L<Devel::Confess::Hacks> module to use built in
+Load the L<Devel::Confess::Builtin> module to use built in
 stack traces on supported exception types.  Disabled by default.
 
 =item C<dump>
@@ -375,7 +375,7 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 Classes or roles added to this hash will not have stack traces
 attached to them.  This is useful for exception classes that provide
 their own stack traces, or classes that don't cope well with being
-re-blessed.  If L<Devel::Confess::Hacks> is loaded, it will
+re-blessed.  If L<Devel::Confess::Buildin> is loaded, it will
 automatically add its supported exception types to this hash.
 
 Default Entries:

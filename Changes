@@ -1,3 +1,4 @@
+  - rename 'hacks' option and module to 'builtin'
   - add dump option to include contents of references in traces.
   - add color option to colorize warnings or errors in terminal.
 

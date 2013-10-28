@@ -1,4 +1,4 @@
-package Devel::Confess::Hacks;
+package Devel::Confess::Builtin;
 use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
@@ -19,12 +19,12 @@ $VERSION = eval $VERSION;
 
 {
   package #hide
-    Devel::Confess::Hacks::_Guard;
+    Devel::Confess::Builtin::_Guard;
   use overload bool => sub () { 0 };
   sub new { bless [@_[1 .. $#_]], $_[0] }
   sub DESTROY {
     return
-      if Devel::Confess::Hacks::_global_destruction;
+      if Devel::Confess::Builtin::_global_destruction;
     $_->() for @{$_[0]}
   }
 }
@@ -68,7 +68,7 @@ sub import {
     }
     else {
       my $store = $hack->{store};
-      my $guard = Devel::Confess::Hacks::_Guard->new(
+      my $guard = Devel::Confess::Builtin::_Guard->new(
         $hack->{enable},
         sub { $Devel::Confess::NoTrace{$class}++ },
       );
@@ -122,11 +122,11 @@ __END__
 
 =head1 NAME
 
-Devel::Confess::Hacks - Enable built in stack traces on exception objects
+Devel::Confess::Builtin - Enable built in stack traces on exception objects
 
 =head1 SYNOPSIS
 
-  use Devel::Confess::Hacks;
+  use Devel::Confess::Builtin;
   use Exception::Class 'MyException';
 
   MyException->throw; # includes stack trace
