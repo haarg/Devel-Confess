@@ -1,7 +1,8 @@
 use strict;
 use warnings;
-use Test::More tests => 8;
+use Test::More tests => 10;
 my $tm_die; BEGIN { $tm_die = $SIG{__DIE__} }
+use t::lib::capture;
 
 use Devel::Confess ();
 
@@ -43,3 +44,49 @@ Devel::Confess->import;
 eval { die };
 is $called, 3, 'dispatches by name to package sub';
 Devel::Confess->unimport;
+
+is capture <<'END_CODE', <<'END_OUTPUT', 'trace still added when outer __DIE__ exists';
+BEGIN { $SIG{__DIE__} = sub { 1 } }
+use Devel::Confess;
+package A;
+
+sub f {
+#line 1 test-block.pl
+    die "Beware!";
+}
+
+sub g {
+#line 2 test-block.pl
+    f();
+}
+
+package main;
+
+#line 3 test-block.pl
+A::g();
+END_CODE
+Beware! at test-block.pl line 1.
+	A::f() called at test-block.pl line 2
+	A::g() called at test-block.pl line 3
+END_OUTPUT
+
+is capture <<'END_CODE', '', 'outer __WARN__ can silence warnings';
+BEGIN { $SIG{__WARN__} = sub { } }
+use Devel::Confess;
+package A;
+
+sub f {
+#line 1 test-block.pl
+    warn "Beware!";
+}
+
+sub g {
+#line 2 test-block.pl
+    f();
+}
+
+package main;
+
+#line 3 test-block.pl
+A::g();
+END_CODE
