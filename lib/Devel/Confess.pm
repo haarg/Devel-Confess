@@ -214,7 +214,10 @@ sub _convert {
     my $out = join('', @_);
 
     my $long = longmess();
-    $out =~ s/(.*)(?:\Q$long\E| at .*? line .*?\n)\z/$1/;
+    my $long_trail = $long;
+    $long_trail =~ s/.*?\n//;
+    $out =~ s/\Q$long\E\z|\Q$long_trail\E\z//
+      or $out =~ s/(.*) at .*? line .*?\n\z/$1/;
 
     return ($out, _stack_trace());
   }

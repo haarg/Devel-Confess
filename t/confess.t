@@ -83,12 +83,17 @@ sub foo {
 #line 1 test-block.pl
   $type "foo at bar\n";
 }
+sub bar {
 #line 2 test-block.pl
-foo();
+  foo();
+}
+#line 3 test-block.pl
+bar();
 END_CODE
 foo at bar
  at test-block.pl line 1.
 	main::foo() called at test-block.pl line 2
+	main::bar() called at test-block.pl line 3
 END_OUTPUT
 
   like capture <<"END_CODE", qr/${\<<'END_OUTPUT'}/, "$type with object";
