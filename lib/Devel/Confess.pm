@@ -12,7 +12,9 @@ use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
 # detect -d:Confess.  disable debugger features for now.  we'll
 # enable them when we need them.
+my $loaded_as_debug;
 if (!defined &DB::DB && $^P & 0x02) {
+  $loaded_as_debug = 1;
   $^P = 0;
 }
 
@@ -61,7 +63,8 @@ sub import {
     if keys %OLD_SIG;
 
   # enable better names for evals and anon subs
-  $^P |= 0x100 | 0x200;
+  $^P |= 0x100 | 0x200
+    unless $] < 5.8 && !$loaded_as_debug;
 
   @OLD_SIG{qw(__DIE__ __WARN__)} = @SIG{qw(__DIE__ __WARN__)};
   $SIG{__DIE__} = \&_die;
