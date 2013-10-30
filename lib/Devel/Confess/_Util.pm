@@ -44,6 +44,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
     package
       Carp;
     our $in_recurse;
+    $format_arg; # capture
     no warnings 'redefine';
     sub format_arg {
       if (! $in_recurse) {
@@ -68,7 +69,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
       }
       $format_arg->(@_);
     }
-  };
+  } or die $@;
 }
 
 1;
