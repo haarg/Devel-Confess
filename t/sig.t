@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 use Test::More tests => 8;
+my $tm_die; BEGIN { $tm_die = $SIG{__DIE__} }
 
 use Devel::Confess ();
 
-ok !$SIG{__DIE__}, 'not activated without import';
+is $SIG{__DIE__}, $tm_die, 'not activated without import';
 my $called;
 sub CALLED { $called++ };
 $SIG{__DIE__} = \&CALLED;
