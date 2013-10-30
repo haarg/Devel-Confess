@@ -11,7 +11,7 @@ $SIG{__DIE__} = \&CALLED;
 Devel::Confess->import;
 isnt $SIG{__DIE__}, \&CALLED, 'import overwrites existing __DIE__ handler';
 eval { die };
-is $called, 1, 'dispatches to outer __DIE__ handler';
+is $called, 1, 'calls outer __DIE__ handler';
 Devel::Confess->unimport;
 is $SIG{__DIE__}, \&CALLED, 'unimport restores __DIE__ handler';
 

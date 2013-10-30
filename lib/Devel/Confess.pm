@@ -114,10 +114,8 @@ sub _die {
   if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
     $sig->(@convert);
   }
-  else {
-    _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
-    die @convert;
-  }
+  _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
+  die @convert;
 }
 
 sub _colorize {
