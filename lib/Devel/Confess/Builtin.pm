@@ -29,7 +29,7 @@ $VERSION = eval $VERSION;
   }
 }
 
-our %HACKS = (
+our %CLASS = (
   'Exception::Class::Base' => {
     enable => sub { Exception::Class::Base->Trace(1) },
     store => '$Exception::Class::BASE_EXC_CLASS',
@@ -54,22 +54,22 @@ our %HACKS = (
 
 sub import {
   my ($class, @enable) = @_;
-  @enable = keys %HACKS
+  @enable = keys %CLASS
     unless @enable;
 
   for my $class (@enable) {
-    my $hack = $HACKS{$class} or die "invalid class $class!";
-    next if $hack->{enabled};
+    my $class_data = $CLASS{$class} or die "invalid class $class!";
+    next if $class_data->{enabled};
 
     (my $module = "$class.pm") =~ s{::}{/}g;
     if ($INC{$module}) {
-      $hack->{enable}->();
+      $class_data->{enable}->();
       $Devel::Confess::NoTrace{$class}++;
     }
     else {
-      my $store = $hack->{store};
+      my $store = $class_data->{store};
       my $guard = Devel::Confess::Builtin::_Guard->new(
-        $hack->{enable},
+        $class_data->{enable},
         sub { $Devel::Confess::NoTrace{$class}++ },
       );
 
@@ -81,27 +81,27 @@ sub import {
       }
     }
 
-    $hack->{enabled}++;
+    $class_data->{enabled}++;
   }
 }
 
 sub unimport {
   my ($class, @disable) = @_;
-  @disable = keys %HACKS
+  @disable = keys %CLASS
     unless @disable;
 
   for my $class (@disable) {
-    my $hack = $HACKS{$class} or die "invalid class $class!";
-    next unless $hack->{enabled};
+    my $class_data = $CLASS{$class} or die "invalid class $class!";
+    next unless $class_data->{enabled};
 
     (my $module = "$class.pm") =~ s{::}{/}g;
     if ($INC{$module}) {
       # can't really disable if it's already been loaded, so just do nothing
     }
     else {
-      my $store = $hack->{store};
+      my $store = $class_data->{store};
       if (ref $store) {
-        $hack->{disable}->();
+        $class_data->{disable}->();
       }
       else {
         eval q{
@@ -111,7 +111,7 @@ sub unimport {
           1;
         } or die $@;
       }
-      $hack->{enabled}--;
+      $class_data->{enabled}--;
       $Devel::Confess::NoTrace{$class}--;
     }
   }
