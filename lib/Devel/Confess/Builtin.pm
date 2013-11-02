@@ -44,7 +44,13 @@ our %CLASS = (
   },
   'Exception::Base' => {
     enable => sub { Exception::Base->import(verbosity => 3) },
-    store => '$Exception::Base::_qualify_to_ref'
+    store => sub {
+      my $guard = shift;
+      $Exception::Base::_qualify_to_ref
+          = Devel::Confess::Builtin::_Guard->new(sub {
+        $Exception::Base::VERSION = $guard;
+      });
+    },
   },
   'Error' => {
     enable => sub { $Error::Debug = 1 },
