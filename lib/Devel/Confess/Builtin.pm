@@ -52,10 +52,6 @@ our %CLASS = (
       });
     },
   },
-  'Error' => {
-    enable => sub { $Error::Debug = 1 },
-    store => '$Error::Debug',
-  },
 );
 
 sub import {
@@ -167,10 +163,6 @@ L<Class::Throwable>
 =item *
 
 L<Exception::Base>
-
-=item *
-
-L<Error>
 
 =back
 
