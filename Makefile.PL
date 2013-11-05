@@ -24,6 +24,12 @@ my %META = (
       'Carp' => 0,
       'Scalar::Util' => 0,
     } },
+    develop => { requires => {
+      'Exception::Class'  => 0,
+      'Ouch'              => 0,
+      'Class::Throwable'  => 0,
+      'Exception::Base'   => 0,
+    } },
   },
   resources => {
     repository => {
