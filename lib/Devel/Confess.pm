@@ -372,6 +372,9 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 =back
 
+The default options can be changed by setting the C<DEVEL_CONFESS_OPTIONS>
+environment variable to a space separated list of options.
+
 =head1 CONFIGURATION
 
 =head2 C<%Devel::Confess::NoTrace>
