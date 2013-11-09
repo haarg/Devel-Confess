@@ -394,7 +394,7 @@ environment variable to a space separated list of options.
 Classes or roles added to this hash will not have stack traces
 attached to them.  This is useful for exception classes that provide
 their own stack traces, or classes that don't cope well with being
-re-blessed.  If L<Devel::Confess::Buildin> is loaded, it will
+re-blessed.  If L<Devel::Confess::Builtin> is loaded, it will
 automatically add its supported exception types to this hash.
 
 Default Entries:
