@@ -75,20 +75,6 @@ sub import {
   $SIG{__WARN__} = \&_warn;
 }
 
-sub _find_sig {
-  my $sig = $_[0];
-  return undef
-    if !defined $sig;
-  return $sig
-    if ref $sig && eval { \&{$sig} };
-  return undef
-    if $sig eq 'DEFAULT' || $sig eq 'IGNORE';
-  package #hide
-    main;
-  no strict 'refs';
-  defined &{$sig} ? \&{$sig} : undef;
-}
-
 sub unimport {
   return
     unless keys %OLD_SIG;
@@ -104,6 +90,20 @@ sub unimport {
 }
 END {
   __PACKAGE__->unimport;
+}
+
+sub _find_sig {
+  my $sig = $_[0];
+  return undef
+    if !defined $sig;
+  return $sig
+    if ref $sig && eval { \&{$sig} };
+  return undef
+    if $sig eq 'DEFAULT' || $sig eq 'IGNORE';
+  package #hide
+    main;
+  no strict 'refs';
+  defined &{$sig} ? \&{$sig} : undef;
 }
 
 sub _warn {
