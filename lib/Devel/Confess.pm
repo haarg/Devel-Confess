@@ -62,6 +62,15 @@ sub import {
   if ($OPTIONS{source}) {
     require Devel::Confess::Source;
   }
+  if ($OPTIONS{color} && $^O eq 'MSWin32') {
+    if (eval { require Win32::Console::ANSI }) {
+      Win32::Console::ANSI->import;
+    }
+    else {
+      Carp::carp "Devel::Confess color option requires Win32::Console::ANSI on Windows";
+      $OPTIONS{color} = 0;
+    }
+  }
 
   return
     if keys %OLD_SIG;
