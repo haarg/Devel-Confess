@@ -9,6 +9,12 @@ $^P |= $] >= 5.010 ? 0x400 : do {
   0x02;
 };
 
+my $want_color = $^O ne 'MSWin32' ? 1 : eval {
+  require Win32::Console::ANSI;
+  Win32::Console::ANSI->import;
+  1;
+};
+
 sub source_trace {
   my ($skip, $context) = @_;
   $skip ||= 1;
@@ -31,7 +37,7 @@ sub source_trace {
     for my $read_line ($start..$end) {
       my $code = $lines->[$read_line];
       $code =~ s/\n\z//;
-      if ($read_line == $line) {
+      if ($want_color && $read_line == $line) {
         $code = "\e[30;43m$code\e[m";
       }
       $context .= sprintf "%5s : %s\n", $read_line, $code;
