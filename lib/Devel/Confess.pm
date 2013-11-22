@@ -30,11 +30,11 @@ sub _parse_options {
   my @opts = map { /^-?(no[_-])?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
   if (!keys %OPTIONS) {
     %OPTIONS = (
-      objects => 1,
-      builtin => undef,
-      dump => 0,
-      color => 0,
-      source => 0,
+      objects   => 1,
+      builtin   => undef,
+      dump      => 0,
+      color     => 0,
+      source    => 0,
     );
     local $@;
     eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
