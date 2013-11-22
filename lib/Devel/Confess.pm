@@ -35,6 +35,8 @@ sub _parse_options {
       dump      => 0,
       color     => 0,
       source    => 0,
+      errors    => 1,
+      warnings  => 1,
     );
     local $@;
     eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
@@ -79,9 +81,14 @@ sub import {
   $^P |= 0x100 | 0x200
     unless $] < 5.8 && !$loaded_as_debug;
 
-  @OLD_SIG{qw(__DIE__ __WARN__)} = @SIG{qw(__DIE__ __WARN__)};
-  $SIG{__DIE__} = \&_die;
-  $SIG{__WARN__} = \&_warn;
+  if ($OPTIONS{errors}) {
+    $OLD_SIG{__DIE__} = $SIG{__DIE__};
+    $SIG{__DIE__} = \&_die;
+  }
+  if ($OPTIONS{warnings}) {
+    $OLD_SIG{__WARN__} = $SIG{__WARN__};
+    $SIG{__WARN__} = \&_warn;
+  }
 }
 
 sub unimport {
@@ -390,6 +397,14 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 Includes a snippet of the source for each level of the stack trace. Disabled
 by default.
+
+=item C<errors>
+
+Add stack traces to errors.  Enabled by default.
+
+=item C<warnings>
+
+Add stack traces to warnings.  Enabled by default.
 
 =back
 
