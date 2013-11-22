@@ -10,11 +10,11 @@ use Carp ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
+my $can_use_informative_names = $] >= 5.8;
 # detect -d:Confess.  disable debugger features for now.  we'll
 # enable them when we need them.
-my $loaded_as_debug;
 if (!defined &DB::DB && $^P & 0x02) {
-  $loaded_as_debug = 1;
+  $can_use_informative_names = 1;
   $^P = 0;
 }
 
@@ -37,6 +37,7 @@ sub _parse_options {
       source    => 0,
       errors    => 1,
       warnings  => 1,
+      better_names => 1,
     );
     local $@;
     eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
@@ -74,21 +75,18 @@ sub import {
     }
   }
 
-  return
-    if keys %OLD_SIG;
-
-  # enable better names for evals and anon subs
-  $^P |= 0x100 | 0x200
-    unless $] < 5.8 && !$loaded_as_debug;
-
-  if ($OPTIONS{errors}) {
+  if ($OPTIONS{errors} && !$OLD_SIG{__DIE__}) {
     $OLD_SIG{__DIE__} = $SIG{__DIE__};
     $SIG{__DIE__} = \&_die;
   }
-  if ($OPTIONS{warnings}) {
+  if ($OPTIONS{warnings} && !$OLD_SIG{__WARN__}) {
     $OLD_SIG{__WARN__} = $SIG{__WARN__};
     $SIG{__WARN__} = \&_warn;
   }
+
+  # enable better names for evals and anon subs
+  $^P |= 0x100 | 0x200
+    if $can_use_informative_names && $OPTIONS{better_names};
 }
 
 sub unimport {
@@ -397,6 +395,11 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 Includes a snippet of the source for each level of the stack trace. Disabled
 by default.
+
+=item C<better_names>
+
+Use more informative names to string evals and anonymous subs in stack
+traces.  Enabled by default.
 
 =item C<errors>
 
