@@ -102,9 +102,6 @@ sub unimport {
     }
   }
 }
-END {
-  __PACKAGE__->unimport;
-}
 
 sub _find_sig {
   my $sig = $_[0];
