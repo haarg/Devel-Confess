@@ -1,3 +1,11 @@
+Release history for Devel-Confess
+
+  - rewrote docs with better enables
+  - allow DEVEL_CONFESS_OPTIONS to use comma separators
+  - no longer disables itself during global destruction
+  - warnings and errors can now be enabled/disabled individually
+  - use Win32::Console::ANSI for color on Windows if available
+
 0.005000 - 2013-11-07
   - add source option to dump source of code surrounding trace.
 
