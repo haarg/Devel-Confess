@@ -10,12 +10,15 @@ use Carp ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
 
-my $can_use_informative_names = $] >= 5.8;
-# detect -d:Confess.  disable debugger features for now.  we'll
-# enable them when we need them.
-if (!defined &DB::DB && $^P & 0x02) {
-  $can_use_informative_names = 1;
-  $^P = 0;
+BEGIN {
+  my $can_use_informative_names = $] >= 5.8;
+  # detect -d:Confess.  disable debugger features for now.  we'll
+  # enable them when we need them.
+  if (!defined &DB::DB && $^P & 0x02) {
+    $can_use_informative_names = 1;
+    $^P = 0;
+  }
+  *_CAN_USE_INFORMATIVE_NAMES = sub () { $can_use_informative_names };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -86,7 +89,7 @@ sub import {
 
   # enable better names for evals and anon subs
   $^P |= 0x100 | 0x200
-    if $can_use_informative_names && $OPTIONS{better_names};
+    if _CAN_USE_INFORMATIVE_NAMES && $OPTIONS{better_names};
 }
 
 sub unimport {
