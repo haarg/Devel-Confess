@@ -50,7 +50,7 @@ sub _parse_options {
     } or warn $@;
   }
   if (my @bad = grep { !exists $OPTIONS{$_->[1]} } @opts) {
-    Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
+    Carp::croak("invalid options: " . join(', ', map { $_->[0] } @bad));
   }
   $OPTIONS{$_->[1]} = $_->[2]
     for @opts;
@@ -77,7 +77,7 @@ sub import {
       Win32::Console::ANSI->import;
     }
     else {
-      Carp::carp "Devel::Confess color option requires Win32::Console::ANSI on Windows";
+      Carp::carp("Devel::Confess color option requires Win32::Console::ANSI on Windows");
       $OPTIONS{color} = 0;
     }
   }
