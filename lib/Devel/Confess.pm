@@ -317,31 +317,44 @@ __END__
 
 =head1 NAME
 
-Devel::Confess - Warns and dies noisily with stack backtraces
+Devel::Confess - Include stack traces on all warnings and errors
 
 =head1 SYNOPSIS
 
-  use Devel::Confess;
+Use on the command line:
 
-makes every C<warn()> and C<die()> complains loudly in the calling package
-and elsewhere.  Works even when exception objects are thrown.  More often
-used on the command line:
-
+  # Make every warning and error include a full stack trace
   perl -MDevel::Confess script.pl
 
-or as shorthand:
-
+  # equivalent short form
   perl -d:Confess script.pl
+
+  # display warnings in yellow and errors in red
+  perl -d:Confess=color script.pl
+
+  # set options by environment
+  export DEVEL_CONFESS_OPTIONS='color dump'
+  perl -d:Confess script.pl
+
+Can also be used inside a script:
+
+  use Devel::Confess;
+
+  use Devel::Confess 'color';
+
+  # disable stack traces
+  no Devel::Confess;
 
 =head1 DESCRIPTION
 
-This module is meant as a debugging aid. It can be used to make a
-script complain loudly with stack backtraces when warn()ing or
-die()ing.  Unlike other similar modules (e.g. L<Carp::Always>), it
-includes stack traces even when exception objects are thrown.
+This module is meant as a debugging aid. It can be used to make a script
+complain loudly with stack backtraces when warn()ing or die()ing.  Unlike other
+similar modules (e.g. L<Carp::Always>), it includes stack traces even when
+exception objects are thrown.
 
-Here are how stack backtraces produced by this module
-looks:
+The stack traces are generated using L<Carp>, and will look work for all types
+of errors.  L<Carp>'s C<carp> and C<confess> functions will also be made to
+include stack traces.
 
   # it works for explicit die's and warn's
   $ perl -MDevel::Confess -e 'sub f { die "arghh" }; sub g { f }; g'
@@ -352,19 +365,12 @@ looks:
   # it works for interpreter-thrown failures
   $ perl -MDevel::Confess -w -e 'sub f { $a = shift; @a = @$a };' \
                                         -e 'sub g { f(undef) }; g'
-  Use of uninitialized value in array dereference at -e line 1.
-          main::f('undef') called at -e line 2
+  Use of uninitialized value $a in array dereference at -e line 1.
+          main::f(undef) called at -e line 2
           main::g() called at -e line 2
 
-In the implementation, the C<Carp> module does
-the heavy work, through C<longmess()>. The
-actual implementation sets the signal hooks
-C<$SIG{__WARN__}> and C<$SIG{__DIE__}> to
-emit the stack backtraces.
-
-Oh, by the way, C<carp> and C<croak> when requiring/using
-the C<Carp> module are also made verbose, behaving
-like C<cluck> and C<confess>, respectively.
+Internally, this is implemented with C<$SIG{__WARN__}> and C<$SIG{__DIE__}>
+hooks.
 
 Stack traces are also included if raw non-object references are thrown.
 
@@ -372,8 +378,8 @@ Stack traces are also included if raw non-object references are thrown.
 
 =head2 import( @options )
 
-Enables stack traces and sets options.  Options can be prefixed
-with no_ to disable them.
+Enables stack traces and sets options.  A list of options to enable can be
+passed in.  Prefixing the options with no_ will disable them.
 
 =over 4
 
@@ -444,8 +450,7 @@ Provides a stack trace
 
 =head1 ACKNOWLEDGMENTS
 
-The idea, part of the code, and most of the documentation are taken
-from L<Carp::Always>.
+The idea and parts of the code and documentation are taken from L<Carp::Always>.
 
 =head1 SEE ALSO
 
