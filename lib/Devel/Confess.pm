@@ -43,14 +43,18 @@ sub _parse_options {
       better_names => 1,
     );
     local $@;
-    eval { _parse_options(split ' ', $ENV{DEVEL_CONFESS_OPTIONS}||''); 1 }
-      or warn $@;
+    eval {
+      _parse_options(
+        grep length, split /[\s,]+/, $ENV{DEVEL_CONFESS_OPTIONS}||''
+      );
+    } or warn $@;
   }
   if (my @bad = grep { !exists $OPTIONS{$_->[1]} } @opts) {
     Carp::croak "invalid options: " . join(', ', map { $_->[0] } @bad);
   }
   $OPTIONS{$_->[1]} = $_->[2]
     for @opts;
+  1;
 }
 
 my %OLD_SIG;
