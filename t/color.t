@@ -1,7 +1,13 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More;
 use t::lib::capture;
+
+if ($^O eq 'MSWin32') {
+  plan skip_all => 'color option requires Win32::Console::ANSI in Windows'
+    unless eval { require Win32::Console::ANSI; };
+}
+plan tests => 1;
 
 $ENV{DEVEL_CONFESS_FORCE_COLOR} = 1;
 my $code = <<'END_CODE';
