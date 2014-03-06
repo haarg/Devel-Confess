@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.006001 - 2014-03-06
   - fix test failures on Windows when optional module not installed
 
 0.006000 - 2014-03-04
