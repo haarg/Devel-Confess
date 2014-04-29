@@ -6,7 +6,7 @@ use ExtUtils::MakeMaker;
 (do 'maint/Makefile.PL.include' or die $@) unless -f 'META.yml';
 
 my %META = (
-  name => 'Devel::Confess',
+  name => 'Devel-Confess',
   license => 'perl_5',
   dynamic_config => 0,
   prereqs => {
