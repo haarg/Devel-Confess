@@ -167,6 +167,7 @@ sub _ref_formatter {
   local $Data::Dumper::Indent = 0;
   local $Data::Dumper::Purity = 0;
   local $Data::Dumper::Terse = 1;
+  local $Data::Dumper::Useqq = 1;
   Data::Dumper::Dumper($_[0]);
 }
 
