@@ -190,13 +190,27 @@ sub CLONE {
 }
 
 sub _convert {
-  __PACKAGE__->CLONE;
+  CLONE;
   if (my $class = blessed(my $ex = $_[0])) {
     return @_
       unless $OPTIONS{objects};
+    my $message;
     my $id = refaddr($ex);
-    return @_
-      if $attached{$id};
+    if ($attached{$id}) {
+      return @_
+        if $ex->isa("Devel::Confess::_Attached");
+
+      # something is going very wrong.  possibly from a Safe compartment.
+      # we probably broke something, but do the best we can.
+      if ((ref $ex) =~ /^Devel::Confess::__ANON_/) {
+        (undef, my $oldclass, $message) = @{$attached{$id}};
+        bless $ex, $oldclass;
+      }
+      else {
+        # give up
+        return @_;
+      }
+    }
 
     my $does = $ex->can('does') || $ex->can('DOES') || sub () { 0 };
     if (
@@ -209,7 +223,7 @@ sub _convert {
       return @_;
     }
 
-    my $message = _stack_trace();
+    $message ||= _stack_trace();
 
     $attached{$id} = [ $ex, $class, $message ];
     weaken $attached{$id}[0];
