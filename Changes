@@ -1,5 +1,10 @@
 Release history for Devel-Confess
 
+  - fix dist name in metadata
+  - add dump1, dump2, etc options to control dump max depth
+  - quote arguments differently, ensuring they will always be on one line
+  - fix issues when triggered in Safe compartments
+
 0.006001 - 2014-03-06
   - fix test failures on Windows when optional module not installed
 
