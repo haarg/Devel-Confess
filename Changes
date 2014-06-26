@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007000 - 2014-06-26
   - fix dist name in metadata
   - add dump1, dump2, etc options to control dump max depth
   - quote arguments differently, ensuring they will always be on one line
