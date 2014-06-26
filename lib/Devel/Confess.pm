@@ -92,12 +92,12 @@ sub import {
 
   if ($OPTIONS{errors} && !$OLD_SIG{__DIE__}) {
     $OLD_SIG{__DIE__} = $SIG{__DIE__}
-      if $SIG{__DIE__} && $SIG{__DIE__} != \&_die;
+      if $SIG{__DIE__} && $SIG{__DIE__} ne \&_die;
     $SIG{__DIE__} = \&_die;
   }
   if ($OPTIONS{warnings} && !$OLD_SIG{__WARN__}) {
     $OLD_SIG{__WARN__} = $SIG{__WARN__}
-      if $SIG{__WARN__} && $SIG{__WARN__} != \&_warn;
+      if $SIG{__WARN__} && $SIG{__WARN__} ne \&_warn;
     $SIG{__WARN__} = \&_warn;
   }
 
