@@ -1,5 +1,7 @@
 Release history for Devel-Confess
 
+  - fix Safe.pm interaction in perls older than 5.20
+
 0.007000 - 2014-06-26
   - fix dist name in metadata
   - add dump1, dump2, etc options to control dump max depth
