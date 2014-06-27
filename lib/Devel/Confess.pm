@@ -9,6 +9,7 @@ $VERSION = eval $VERSION;
 use Carp ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
+BEGIN { *_can = \&UNIVERSAL::can; }
 
 BEGIN {
   my $can_use_informative_names = $] >= 5.8;
@@ -18,7 +19,8 @@ BEGIN {
     $can_use_informative_names = 1;
     $^P = 0;
   }
-  *_CAN_USE_INFORMATIVE_NAMES = sub () { $can_use_informative_names };
+  *_CAN_USE_INFORMATIVE_NAMES
+    = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -85,7 +87,8 @@ sub import {
     }
     else {
       local $SIG{__WARN__};
-      Carp::carp("Devel::Confess color option requires Win32::Console::ANSI on Windows");
+      Carp::carp
+        "Devel::Confess color option requires Win32::Console::ANSI on Windows";
       $OPTIONS{color} = 0;
     }
   }
@@ -207,6 +210,8 @@ sub _convert {
   if (my $class = blessed(my $ex = $_[0])) {
     return @_
       unless $OPTIONS{objects};
+    return @_
+      if ! do {no strict 'refs'; defined &{"Devel::Confess::_Attached::DESTROY"} };
     my $message;
     my $id = refaddr($ex);
     if ($attached{$id}) {
@@ -225,10 +230,11 @@ sub _convert {
       }
     }
 
-    my $does = $ex->can('does') || $ex->can('DOES') || sub () { 0 };
+    my $does = _can($ex, 'can') && ($ex->can('does') || $ex->can('DOES')) || sub () { 0 };
     if (
       grep {
         $NoTrace{$_}
+        && _can($ex, 'isa')
         && $ex->isa($_)
         || $ex->$does($_)
       } keys %NoTrace
