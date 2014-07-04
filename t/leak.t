@@ -3,7 +3,7 @@ use warnings;
 use Scalar::Util;
 use Test::More
   defined &Scalar::Util::weaken ? (tests => 3)
-    : skip_all => "Can't prevent leaks without Scalar::Util::weaken";
+    : (skip_all => "Can't prevent leaks without Scalar::Util::weaken");
 
 use Devel::Confess;
 
