@@ -9,6 +9,7 @@ use base 'Exporter';
 our @EXPORT = qw(blessed refaddr weaken longmess);
 
 use Carp ();
+use Carp::Heavy ();
 use Scalar::Util qw(blessed refaddr);
 
 # fake weaken if it isn't available.  will cause leaks, but this
@@ -17,7 +18,7 @@ use Scalar::Util qw(blessed refaddr);
   ? \&Scalar::Util::weaken
   : sub ($) { 0 };
 
-*longmess = $Carp::VERSION ? \&Carp::longmess : eval q{
+*longmess = $Carp::VERSION && $Carp::VERSION > 1.04 ? \&Carp::longmess : eval q{
   package
     Carp;
   our (%CarpInternal, %Internal, $CarpLevel);
@@ -34,6 +35,7 @@ use Scalar::Util qw(blessed refaddr);
       $level++;
     }
     local $CarpLevel = $CarpLevel + $level;
+    local $INC{'Carp/Heavy.pm'} = $INC{'Carp/Heavy.pm'} || 1;
     &longmess;
   };
 };
