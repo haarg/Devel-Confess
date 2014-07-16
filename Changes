@@ -1,5 +1,7 @@
 Release history for Devel-Confess
 
+  - further fixes for interactions with Safe.pm on perl 5.8
+
 0.007001 - 2014-06-27
   - fix Safe.pm interaction in perls older than 5.20
 
