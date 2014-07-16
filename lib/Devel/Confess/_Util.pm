@@ -18,7 +18,7 @@ use Scalar::Util qw(blessed refaddr);
   ? \&Scalar::Util::weaken
   : sub ($) { 0 };
 
-*longmess = !$Carp::VERSION ? eval q{
+*longmess = !Carp->VERSION ? eval q{
   package
     Carp;
   our (%CarpInternal, %Internal, $CarpLevel);
@@ -37,7 +37,7 @@ use Scalar::Util qw(blessed refaddr);
     local $CarpLevel = $CarpLevel + $level;
     &longmess;
   };
-} : $Carp::VERSION <= 1.04 ? eval q{
+} : Carp->VERSION <= 1.04 ? eval q{
   package
     Carp;
   our ($CarpLevel);
