@@ -12,8 +12,9 @@ sub CALLED { $called++ };
 $SIG{__DIE__} = \&CALLED;
 Devel::Confess->import;
 isnt $SIG{__DIE__}, \&CALLED, 'import overwrites existing __DIE__ handler';
+$called = 0;
 eval { die };
-is $called, 1, 'calls outer __DIE__ handler';
+is 0+$called, 1, 'calls outer __DIE__ handler';
 Devel::Confess->unimport;
 is $SIG{__DIE__}, \&CALLED, 'unimport restores __DIE__ handler';
 
@@ -23,26 +24,30 @@ sub other::sub { $called++ }
 
 $SIG{__DIE__} = 'IGNORE';
 Devel::Confess->import;
+$called = 0;
 eval { die };
-is $called, 1, 'no dispatching to IGNORE';
+is 0+$called, 0, 'no dispatching to IGNORE';
 Devel::Confess->unimport;
 
 $SIG{__DIE__} = 'DEFAULT';
 Devel::Confess->import;
+$called = 0;
 eval { die };
-is $called, 1, 'no dispatching to DEFAULT';
+is 0+$called, 0, 'no dispatching to DEFAULT';
 Devel::Confess->unimport;
 
 $SIG{__DIE__} = 'CALLED';
 Devel::Confess->import;
+$called = 0;
 eval { die };
-is $called, 2, 'dispatches by name';
+is 0+$called, 1, 'dispatches by name';
 Devel::Confess->unimport;
 
 $SIG{__DIE__} = 'other::sub';
 Devel::Confess->import;
+$called = 0;
 eval { die };
-is $called, 3, 'dispatches by name to package sub';
+is 0+$called, 1, 'dispatches by name to package sub';
 Devel::Confess->unimport;
 
 is capture <<'END_CODE', <<'END_OUTPUT', 'trace still added when outer __DIE__ exists';
