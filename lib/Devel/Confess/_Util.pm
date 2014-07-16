@@ -18,7 +18,7 @@ use Scalar::Util qw(blessed refaddr);
   ? \&Scalar::Util::weaken
   : sub ($) { 0 };
 
-*longmess = $Carp::VERSION && $Carp::VERSION > 1.04 ? \&Carp::longmess : eval q{
+*longmess = !$Carp::VERSION ? eval q{
   package
     Carp;
   our (%CarpInternal, %Internal, $CarpLevel);
@@ -35,10 +35,17 @@ use Scalar::Util qw(blessed refaddr);
       $level++;
     }
     local $CarpLevel = $CarpLevel + $level;
+    &longmess;
+  };
+} : $Carp::VERSION <= 1.04 ? eval q{
+  package
+    Carp;
+  our ($CarpLevel);
+  sub {
     local $INC{'Carp/Heavy.pm'} = $INC{'Carp/Heavy.pm'} || 1;
     &longmess;
   };
-};
+} : \&Carp::longmess;
 
 if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   my $format_arg = \&Carp::format_arg;
