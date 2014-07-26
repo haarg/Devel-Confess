@@ -3,7 +3,7 @@ use 5.006;
 use strict;
 use warnings FATAL => 'all';
 
-our $VERSION = '0.007002';
+our $VERSION = '0.007003';
 $VERSION = eval $VERSION;
 
 use Carp ();
