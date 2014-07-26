@@ -1,5 +1,8 @@
 Release history for Devel-Confess
 
+  - fix leak test on new versions of Test::More
+  - prevent PAUSE from trying (and failing) to index an internal package
+
 0.007002 - 2014-07-16
   - further fixes for interactions with Safe.pm on perl 5.8
 
