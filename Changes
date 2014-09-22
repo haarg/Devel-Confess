@@ -1,5 +1,8 @@
 Release history for Devel-Confess
 
+  - make sure unwanted debugging flags are disabled as early as possible,
+    fixing several possible crashes
+
 0.007003 - 2014-07-26
   - fix leak test on new versions of Test::More
   - prevent PAUSE from trying (and failing) to index an internal package
