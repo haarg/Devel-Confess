@@ -1,16 +1,4 @@
 package Devel::Confess;
-use 5.006;
-use strict;
-use warnings FATAL => 'all';
-
-our $VERSION = '0.007003';
-$VERSION = eval $VERSION;
-
-use Carp ();
-use Symbol ();
-use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
-BEGIN { *_can = \&UNIVERSAL::can; }
-
 BEGIN {
   my $can_use_informative_names = $] >= 5.8;
   # detect -d:Confess.  disable debugger features for now.  we'll
@@ -22,6 +10,18 @@ BEGIN {
   *_CAN_USE_INFORMATIVE_NAMES
     = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
 }
+
+use 5.006;
+use strict;
+use warnings FATAL => 'all';
+
+our $VERSION = '0.007003';
+$VERSION = eval $VERSION;
+
+use Carp ();
+use Symbol ();
+use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
+BEGIN { *_can = \&UNIVERSAL::can; }
 
 $Carp::Internal{+__PACKAGE__}++;
 
