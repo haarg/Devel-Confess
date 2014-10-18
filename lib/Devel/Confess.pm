@@ -49,7 +49,7 @@ sub _parse_options {
       _parse_options(
         grep length, split /[\s,]+/, $ENV{DEVEL_CONFESS_OPTIONS}||''
       );
-    } or warn $@;
+    } or warn "DEVEL_CONFESS_OPTIONS: $@";
   }
   for my $opt (@opts) {
     if ($opt->[1] =~ /^dump(\d*)$/) {
