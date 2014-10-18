@@ -544,11 +544,11 @@ C<$SIG{'__DIE__'}>.
 
 =item *
 
-Graham Knop, E<lt>haarg@haarg.orgE<gt>
+Graham Knop <haarg@haarg.org>
 
 =item *
 
-Adriano Ferreira, E<lt>ferreira@cpan.orgE<gt>
+Adriano Ferreira <ferreira@cpan.org>
 
 =back
 
