@@ -1,5 +1,9 @@
 Release history for Devel-Confess
 
+  - fix how we pass options on to other warn/die handlers (RT#100951)
+  - minor pod cleanups
+  - improve diagnostics for bad options in DEVEL_CONFESS_OPTIONS
+
 0.007004 - 2014-09-22
   - make sure unwanted debugging flags are disabled as early as possible,
     fixing several possible crashes
