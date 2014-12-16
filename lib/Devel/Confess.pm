@@ -140,7 +140,7 @@ sub _find_sig {
 sub _warn {
   my @convert = _convert(@_);
   if (my $warn = _find_sig($OLD_SIG{__WARN__})) {
-    $warn->(@convert);
+    $warn->(join('', @convert));
   }
   else {
     _colorize(\@convert, 33) if $OPTIONS{color};
@@ -151,7 +151,7 @@ sub _die {
   local $SIG{__DIE__};
   my @convert = _convert(@_);
   if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
-    $sig->(@convert);
+    $sig->(join('', @convert));
   }
   _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
   die @convert;
