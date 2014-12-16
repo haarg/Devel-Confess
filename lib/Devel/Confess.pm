@@ -412,7 +412,7 @@ Stack traces are also included if raw non-object references are thrown.
 =head2 import( @options )
 
 Enables stack traces and sets options.  A list of options to enable can be
-passed in.  Prefixing the options with no_ will disable them.
+passed in.  Prefixing the options with C<no_> will disable them.
 
 =over 4
 
