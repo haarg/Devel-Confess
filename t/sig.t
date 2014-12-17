@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 10;
+use Test::More tests => 11;
 my $tm_die; BEGIN { $tm_die = $SIG{__DIE__} }
 use t::lib::capture;
 
@@ -95,3 +95,28 @@ package main;
 #line 3 test-block.pl
 A::g();
 END_CODE
+
+is capture <<'END_CODE', <<'END_OUTPUT', 'outer __WARN__ gets full location';
+BEGIN { $SIG{__WARN__} = sub { warn $_[0] } }
+use Devel::Confess;
+package A;
+
+sub f {
+#line 1 test-block.pl
+    warn "Beware!";
+}
+
+sub g {
+#line 2 test-block.pl
+    f();
+}
+
+package main;
+
+#line 3 test-block.pl
+A::g();
+END_CODE
+Beware! at test-block.pl line 1.
+	A::f() called at test-block.pl line 2
+	A::g() called at test-block.pl line 3
+END_OUTPUT
