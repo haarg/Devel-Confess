@@ -1,12 +1,21 @@
 use strict;
 use warnings;
 use Test::More tests => 11;
-my $tm_die; BEGIN { $tm_die = $SIG{__DIE__} }
 use t::lib::capture;
+
+# preload to make sure we only test the effect of our own import
+use base ();
+use Exporter ();
+use Carp ();
+use Carp::Heavy ();
+use Symbol ();
+
+my $pre_die;
+BEGIN { $pre_die = $SIG{__DIE__} }
 
 use Devel::Confess ();
 
-is $SIG{__DIE__}, $tm_die, 'not activated without import';
+is $SIG{__DIE__}, $pre_die, 'not activated without import';
 my $called;
 sub CALLED { $called++ };
 $SIG{__DIE__} = \&CALLED;
