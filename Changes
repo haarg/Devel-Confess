@@ -1,5 +1,9 @@
 Release history for Devel-Confess
 
+  - don't delete packages that exceptions are currently blessed as
+  - protect tests against other loaded modules effecting hooks
+  - add test for warning passing fix from 0.007005
+
 0.007005 - 2014-12-16
   - fix how we pass options on to other warn/die handlers (RT#100951)
   - minor pod cleanups
