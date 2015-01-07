@@ -17,8 +17,7 @@ matrix:
     - perl: 5.18
       env: COVERAGE=1
 before_install:
-  - eval $(curl https://travis-perl.github.io/init)
-  - setup-auto
+  - eval $(curl https://travis-perl.github.io/init) --auto
 branches:
   except:
     - /^wip\//
