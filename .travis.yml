@@ -23,6 +23,7 @@ branches:
   except:
     - /^wip\//
     - /^blocked/
+sudo: false
 notifications:
   email: false
   irc:
