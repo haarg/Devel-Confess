@@ -1,5 +1,10 @@
 Release history for Devel-Confess
 
+  - fatal warnings in destructors can cause segfaults, so disable them
+  - protect against losing information during global destruction and then
+    triggering our own errors
+  - improve stack trace formatting when generated during global destruction
+
 0.007006 - 2015-01-08
   - don't delete packages that exceptions are currently blessed as
   - protect tests against other loaded modules effecting hooks
