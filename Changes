@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007007 - 2015-01-19
   - fatal warnings in destructors can cause segfaults, so disable them
   - protect against losing information during global destruction and then
     triggering our own errors
