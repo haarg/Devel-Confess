@@ -13,7 +13,7 @@ BEGIN {
 
 use 5.006;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 our $VERSION = '0.007006';
 $VERSION = eval $VERSION;
