@@ -66,7 +66,7 @@ sub _parse_options {
   1;
 }
 
-my %OLD_SIG;
+our %OLD_SIG;
 
 sub import {
   my $class = shift;
@@ -198,11 +198,20 @@ sub _stack_trace {
   $message;
 }
 
-my $pack_suffix = 'A000';
-my %attached;
+our $PACK_SUFFIX = 'A000';
+
+our %EXCEPTIONS;
+our %PACKAGES;
+our %MESSAGES;
 
 sub CLONE {
-  %attached = map { $_->[0] ? (refaddr($_->[0]) => $_) : () } values %attached;
+  for my $old_id ( keys %EXCEPTIONS ) {
+    my $ex = delete $EXCEPTIONS{$old_id};
+    my $id = refaddr($ex);
+    $EXCEPTIONS{$id} = $ex;
+    $PACKAGES{$id} = delete $PACKAGES{$old_id};
+    $MESSAGES{$id} = delete $MESSAGES{$old_id};
+  }
 }
 
 sub _convert {
@@ -214,14 +223,15 @@ sub _convert {
       if ! do {no strict 'refs'; defined &{"Devel::Confess::_Attached::DESTROY"} };
     my $message;
     my $id = refaddr($ex);
-    if ($attached{$id}) {
+    if ($EXCEPTIONS{$id}) {
       return @_
         if $ex->isa("Devel::Confess::_Attached");
 
       # something is going very wrong.  possibly from a Safe compartment.
       # we probably broke something, but do the best we can.
       if ((ref $ex) =~ /^Devel::Confess::__ANON_/) {
-        (undef, my $oldclass, $message) = @{$attached{$id}};
+        my $oldclass = $PACKAGES{$id};
+        $message = $MESSAGES{$id};
         bless $ex, $oldclass;
       }
       else {
@@ -244,10 +254,11 @@ sub _convert {
 
     $message ||= _stack_trace();
 
-    $attached{$id} = [ $ex, $class, $message ];
-    weaken $attached{$id}[0];
+    weaken($EXCEPTIONS{$id} = $ex);
+    $PACKAGES{$id} = $class;
+    $MESSAGES{$id} = $message;
 
-    my $newclass = __PACKAGE__ . '::__ANON_' . $pack_suffix++ . '__';
+    my $newclass = __PACKAGE__ . '::__ANON_' . $PACK_SUFFIX++ . '__';
 
     {
       no strict 'refs';
@@ -259,14 +270,14 @@ sub _convert {
   }
   elsif (ref($ex = $_[0])) {
     my $id = refaddr($ex);
-    my $info = $attached{$id} ||= do {
-      my $message = _stack_trace;
-      my $info = [ $_[0], undef, $message ];
-      weaken $info->[0];
-      $info;
-    };
 
-    return ($^S ? @_ : ( @_, $info->[2] ));
+    my $message = _stack_trace;
+
+    weaken($EXCEPTIONS{$id} = $ex);
+    $PACKAGES{$id} = undef;
+    $MESSAGES{$id} ||= $message;
+
+    return ($^S ? @_ : ( @_, $message ));
   }
   elsif ((caller(1))[0] eq 'Carp') {
     my $out = join('', @_);
@@ -289,14 +300,11 @@ sub _convert {
   }
 }
 
-sub _ex_info {
-  @{$attached{refaddr $_[0]}};
-}
-sub _delete_ex_info {
-  @{ delete $attached{refaddr $_[0]} };
-}
 sub _ex_as_strings {
-  my ($ex, $class, $message) = _ex_info(@_);
+  my $ex = $_[0];
+  my $id = refaddr($ex);
+  my $class = $PACKAGES{$id};
+  my $message = $MESSAGES{$id};
   my $newclass = ref $ex;
   bless $ex, $class;
   my $out = "$ex";
@@ -310,7 +318,8 @@ sub _ex_as_strings {
   use overload
     fallback => 1,
     'bool' => sub {
-      my ($ex, $class) = Devel::Confess::_ex_info(@_);
+      my $ex = $_[0];
+      my $class = $PACKAGES{Devel::Confess::refaddr($ex)};
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = !!$ex;
@@ -318,7 +327,8 @@ sub _ex_as_strings {
       return $out;
     },
     '0+' => sub {
-      my ($ex, $class) = Devel::Confess::_ex_info(@_);
+      my $ex = $_[0];
+      my $class = $PACKAGES{Devel::Confess::refaddr($ex)};
       my $newclass = ref $ex;
       bless $ex, $class;
       my $out = 0+sprintf '%f', $ex;
@@ -331,7 +341,12 @@ sub _ex_as_strings {
   ;
 
   sub DESTROY {
-    my ($ex, $class) = Devel::Confess::_delete_ex_info(@_);
+    my $ex = $_[0];
+    my $id = Devel::Confess::refaddr($ex);
+    my $class = delete $PACKAGES{$id} or return;
+    delete $MESSAGES{$id};
+    delete $EXCEPTIONS{$id};
+
     my $newclass = ref $ex;
 
     bless $ex, $class;
