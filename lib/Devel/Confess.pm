@@ -292,10 +292,14 @@ sub _convert {
   }
   else {
     my $message = _stack_trace();
-    $message =~ s/^(.*\n)//;
+    $message =~ s/^(.*\n?)//;
     my $where = $1;
+    my $find = $where;
+    $find =~ s/(\.?\n?)\z//;
+    $find = qr/\Q$find\E(?: during global destruction)?(\.?\n?)/;
     my $out = join('', @_);
-    $out =~ s/\Q$where\E\z//;
+    $out =~ s/($find)\z//
+      and $where = $1;
     return ($out, $where . $message);
   }
 }
