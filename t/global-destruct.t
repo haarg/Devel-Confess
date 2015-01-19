@@ -1,10 +1,11 @@
 use strict;
 use warnings;
 no warnings 'once';
-use Test::More tests => 1;
-Test::More->builder->no_ending(1);
 use Devel::Confess;
 use POSIX ();
+
+$| = 1;
+print "1..1\n";
 
 {
   package MyException;
@@ -30,26 +31,29 @@ sub bar {
   foo();
 }
 
-our $ex = bar();
-my $stringy = "$ex";
 
 # gd order is unpredictable, try multiple times
 our $last01 = bless {}, 'InGD';
 our $last02 = bless {}, 'InGD';
+our $ex = bar();
+our $stringy = "$ex";
 our $last03 = bless {}, 'InGD';
 our $last04 = bless {}, 'InGD';
 
 sub InGD::DESTROY {
   if (!defined $ex) {
-    SKIP: {
-      skip "got unlucky on GD order, can't test", 1;
-    }
+    print "ok 1 # skip got unlucky on GD order, can't test\n";
   }
   else {
     my $gd_stringy = "$ex";
-    is $gd_stringy, $stringy,
-      "stringifies properly in global destruction"
-        or POSIX::_exit(1);
+    my $ok = $gd_stringy eq $stringy;
+    print ( ($ok ? '' : 'not ') . "ok 1 - stringifies properly in global destruction\n");
+    unless ($ok) {
+      s/^/#  /mg, s/\n$//
+        for $stringy, $gd_stringy;
+      print "# Got:\n$gd_stringy\n#\n# Expected:\n$stringy\n";
+      POSIX::_exit(1);
+    }
   }
   POSIX::_exit(0);
 }
