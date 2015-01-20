@@ -1,5 +1,7 @@
 Release history for Devel-Confess
 
+  - don't attempt threading tests if threading is broken
+
 0.007007 - 2015-01-19
   - fatal warnings in destructors can cause segfaults, so disable them
   - protect against losing information during global destruction and then
