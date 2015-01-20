@@ -3,7 +3,7 @@ use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
 
-our $VERSION = '0.007007';
+our $VERSION = '0.007008';
 $VERSION = eval $VERSION;
 
 {
