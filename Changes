@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007008 - 2015-01-20
   - don't attempt threading tests if threading is broken
 
 0.007007 - 2015-01-19
