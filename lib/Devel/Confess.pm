@@ -204,7 +204,7 @@ our %EXCEPTIONS;
 our %PACKAGES;
 our %MESSAGES;
 
-sub CLONE {
+sub _update_ex_refs {
   for my $old_id ( keys %EXCEPTIONS ) {
     my $package = delete $PACKAGES{$old_id};
     my $message = delete $MESSAGES{$old_id};
@@ -218,8 +218,12 @@ sub CLONE {
   }
 }
 
+sub CLONE {
+  _update_ex_refs;
+}
+
 sub _convert {
-  CLONE;
+  _update_ex_refs;
   if (my $class = blessed(my $ex = $_[0])) {
     return @_
       unless $OPTIONS{objects};
