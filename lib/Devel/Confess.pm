@@ -9,6 +9,8 @@ BEGIN {
   }
   *_CAN_USE_INFORMATIVE_NAMES
     = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
+  *_BAD_CLONE_DESTROY
+    = ($] => 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
 }
 
 use 5.006;
@@ -220,6 +222,10 @@ sub _update_ex_refs {
 
 sub CLONE {
   _update_ex_refs;
+  if (_BAD_CLONE_DESTROY) {
+    our %CLONED;
+    @CLONED{keys %EXCEPTIONS} = ();
+  }
 }
 
 sub _convert {
@@ -360,6 +366,11 @@ sub _ex_as_strings {
     delete $EXCEPTIONS{$id};
 
     my $newclass = ref $ex;
+
+    if (Devel::Confess::_BAD_CLONE_DESTROY && exists $Devel::Confess::CLONED{$id}) {
+      my $destroy = $class->can('DESTROY') || return;
+      goto $destroy;
+    }
 
     bless $ex, $class;
 
