@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Scalar::Util;
 use Test::More
-  defined &Scalar::Util::weaken ? (tests => 3)
+  defined &Scalar::Util::weaken ? (tests => 4)
     : (skip_all => "Can't prevent leaks without Scalar::Util::weaken");
 
 use Devel::Confess;
@@ -31,3 +31,10 @@ is $gone, 1, "exception destroyed after \$@ cleared";
 
 ok !UNIVERSAL::can($class, 'DESTROY'), "temp packages don't leak";
 
+$gone = 0;
+eval {
+  MyException->throw;
+};
+Devel::Confess->CLONE;
+undef $@;
+is $gone, 1, "exception destroyed after \$@ cleared";
