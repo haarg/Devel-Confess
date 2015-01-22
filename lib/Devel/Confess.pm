@@ -206,11 +206,15 @@ our %MESSAGES;
 
 sub CLONE {
   for my $old_id ( keys %EXCEPTIONS ) {
+    my $package = delete $PACKAGES{$old_id};
+    my $message = delete $MESSAGES{$old_id};
     my $ex = delete $EXCEPTIONS{$old_id};
+    next
+      unless defined $ex;
     my $id = refaddr($ex);
-    $EXCEPTIONS{$id} = $ex;
-    $PACKAGES{$id} = delete $PACKAGES{$old_id};
-    $MESSAGES{$id} = delete $MESSAGES{$old_id};
+    weaken($EXCEPTIONS{$id} = $ex);
+    $PACKAGES{$id} = $package;
+    $MESSAGES{$id} = $message;
   }
 }
 
