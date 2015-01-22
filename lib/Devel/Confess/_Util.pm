@@ -81,4 +81,15 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   } or die $@;
 }
 
+{
+  our $gd;
+  sub _global_destruction () {
+    if (!$gd) {
+      local $SIG{__WARN__} = sub { $gd = $_[0] =~ /global destruction\.\n\z/ };
+      warn 1;
+    }
+    $gd;
+  }
+}
+
 1;

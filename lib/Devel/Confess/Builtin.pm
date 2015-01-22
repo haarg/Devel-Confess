@@ -6,16 +6,7 @@ no warnings 'once';
 our $VERSION = '0.007008';
 $VERSION = eval $VERSION;
 
-{
-  our $gd;
-  sub _global_destruction () {
-    if (!$gd) {
-      local $SIG{__WARN__} = sub { $gd = $_[0] =~ /global destruction\.\n\z/ };
-      warn 1;
-    }
-    $gd;
-  }
-}
+use Devel::Confess::_Util ();
 
 {
   package #hide
@@ -24,7 +15,7 @@ $VERSION = eval $VERSION;
   sub new { bless [@_[1 .. $#_]], $_[0] }
   sub DESTROY {
     return
-      if Devel::Confess::Builtin::_global_destruction;
+      if Devel::Confess::_Util::_global_destruction;
     $_->() for @{$_[0]}
   }
 }
