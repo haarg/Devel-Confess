@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007009 - 2015-01-23
   - prevent segfaults on perl 5.10.0 and 5.8.9 with threads
   - fix leaking exception objects if another is thrown or a thread created
 
