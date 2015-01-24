@@ -10,7 +10,7 @@ BEGIN {
   *_CAN_USE_INFORMATIVE_NAMES
     = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
   *_BAD_CLONE_DESTROY
-    = ($] => 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
+    = ($] >= 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
 }
 
 use 5.006;
