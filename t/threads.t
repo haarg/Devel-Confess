@@ -2,9 +2,10 @@ use t::lib::threads_check;
 use threads;
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 3;
 use Devel::Confess;
 
+my $gone = 0;
 {
   package MyException;
   use overload
@@ -17,6 +18,9 @@ use Devel::Confess;
     my ($class, $message) = @_;
     my $self = bless { message => $message }, $class;
     return $self;
+  }
+  sub DESTROY {
+    $gone++;
   }
 }
 
@@ -39,3 +43,20 @@ my $stringy_from_thread = threads->create(sub {
 
 is $stringy_from_thread, $stringy_ex,
   'stack trace maintained across threads';
+
+my $thread_gone = threads->create(sub {
+  undef $ex;
+  $gone;
+})->join;
+
+is $thread_gone, $gone + 1,
+  'DESTROY called in threads for cloned exception';
+
+my $cleared = threads->create(sub {
+  my $class = ref $ex;
+  undef $ex;
+  UNIVERSAL::can($class, 'DESTROY') ? 0 : 1;
+})->join;
+
+ok $cleared,
+  'cloned exception cleans up namespace when destroyed';
