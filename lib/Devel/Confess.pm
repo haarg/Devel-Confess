@@ -205,26 +205,28 @@ our $PACK_SUFFIX = 'A000';
 our %EXCEPTIONS;
 our %PACKAGES;
 our %MESSAGES;
-
-sub _update_ex_refs {
-  for my $old_id ( keys %EXCEPTIONS ) {
-    my $package = delete $PACKAGES{$old_id};
-    my $message = delete $MESSAGES{$old_id};
-    my $ex = delete $EXCEPTIONS{$old_id};
-    next
-      unless defined $ex;
-    my $id = refaddr($ex);
-    weaken($EXCEPTIONS{$id} = $ex);
-    $PACKAGES{$id} = $package;
-    $MESSAGES{$id} = $message;
-  }
-}
+our %CLONED;
 
 sub CLONE {
-  _update_ex_refs;
-  if (_BAD_CLONE_DESTROY) {
-    our %CLONED;
-    @CLONED{keys %EXCEPTIONS} = ();
+  my %id_map = map { my $ex = $EXCEPTIONS{$_}; $ex ? ($_ => refaddr($ex)) : () } keys %EXCEPTIONS;
+  %EXCEPTIONS = map {; $id_map{$_} => $EXCEPTIONS{$_}} keys %id_map;
+  %PACKAGES = map {; $id_map{$_} => $PACKAGES{$_}} keys %id_map;
+  %MESSAGES = map {; $id_map{$_} => $MESSAGES{$_}} keys %id_map;
+  %CLONED = map {; $_ => 1 } values %id_map
+    if _BAD_CLONE_DESTROY;
+  weaken($_)
+    for values %EXCEPTIONS;
+}
+
+sub _update_ex_refs {
+  for my $id ( keys %EXCEPTIONS ) {
+    next
+      if $EXCEPTIONS{$id};
+    delete $EXCEPTIONS{$id};
+    delete $PACKAGES{$id};
+    delete $MESSAGES{$id};
+    delete $CLONED{$id}
+      if _BAD_CLONE_DESTROY;
   }
 }
 
