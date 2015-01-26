@@ -8,14 +8,25 @@ sub _skip {
 sub import {
   my ($class, $op) = @_;
   if ($0 eq '-' && $op) {
+    require POSIX;
     if ($op eq 'installed') {
-      eval { require threads } or exit 1;
+      eval { require threads } or POSIX::_exit(1);
     }
     elsif ($op eq 'create') {
       require threads;
-      threads->create(sub{ 1 })->join;
+      require File::Spec;
+      open my $olderr, '>&', \*STDERR
+        or die "can't dup filehandle: $!";
+      open STDERR, '>', File::Spec->devnull
+        or die "can't open null: $!";
+      my $out = threads->create(sub { 1 })->join;
+      open STDERR, '>&', $olderr;
+      POSIX::_exit((defined $out && $out eq '1') ? 0 : 1);
     }
-    exit 0;
+    else {
+      die "Invalid option $op!\n";
+    }
+    POSIX::_exit(0);
   }
   require Config;
   if (! $Config::Config{useithreads}) {
