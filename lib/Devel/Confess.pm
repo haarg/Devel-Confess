@@ -24,7 +24,7 @@ $VERSION = eval $VERSION;
 
 use Carp ();
 use Symbol ();
-use Devel::Confess::_Util qw(blessed refaddr weaken longmess);
+use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val);
 BEGIN { *_can = \&UNIVERSAL::can; }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -192,8 +192,8 @@ sub _ref_formatter {
 
 sub _stack_trace {
   no warnings 'once';
-  local $Carp::RefArgFormatter = \&_ref_formatter
-    if $OPTIONS{dump};
+  local $Carp::RefArgFormatter
+    = $OPTIONS{dump} ? \&_ref_formatter : \&_str_val;
   my $message = &longmess;
   $message =~ s/\.?$/./m;
   if ($OPTIONS{source}) {

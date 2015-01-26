@@ -6,11 +6,11 @@ no warnings 'once';
 
 use base 'Exporter';
 
-our @EXPORT = qw(blessed refaddr weaken longmess);
+our @EXPORT = qw(blessed refaddr weaken longmess _str_val);
 
 use Carp ();
 use Carp::Heavy ();
-use Scalar::Util qw(blessed refaddr);
+use Scalar::Util qw(blessed refaddr reftype);
 
 # fake weaken if it isn't available.  will cause leaks, but this
 # is a brute force debugging tool, so we can deal with it.
@@ -80,6 +80,19 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
     }
   } or die $@;
 }
+
+*_str_val = eval q{
+  sub {
+    no overloading;
+    "$_[0]";
+  };
+} || eval q{
+  sub {
+    my $class = blessed($_[0]);
+    return "$_[0]" unless defined $class;
+    return sprintf("%s=%s(0x%x)", &blessed, &reftype, &refaddr);
+  };
+};
 
 {
   our $gd;
