@@ -9,8 +9,10 @@ BEGIN {
   }
   *_CAN_USE_INFORMATIVE_NAMES
     = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
-  *_BAD_CLONE_DESTROY
-    = ($] >= 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
+  *_BROKEN_CLONED_DESTROY_REBLESS
+    = ($] >= 5.008009 && $] < 5.010000) ? sub () { 1 } : sub () { 0 };
+  *_BROKEN_CLONED_GLOB_UNDEF
+    = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
 }
 
 use 5.006;
@@ -213,7 +215,7 @@ sub CLONE {
   %PACKAGES = map {; $id_map{$_} => $PACKAGES{$_}} keys %id_map;
   %MESSAGES = map {; $id_map{$_} => $MESSAGES{$_}} keys %id_map;
   %CLONED = map {; $_ => 1 } values %id_map
-    if _BAD_CLONE_DESTROY;
+    if _BROKEN_CLONED_DESTROY_REBLESS || _BROKEN_CLONED_GLOB_UNDEF;
   weaken($_)
     for values %EXCEPTIONS;
 }
@@ -226,7 +228,7 @@ sub _update_ex_refs {
     delete $PACKAGES{$id};
     delete $MESSAGES{$id};
     delete $CLONED{$id}
-      if _BAD_CLONE_DESTROY;
+      if _BROKEN_CLONED_DESTROY_REBLESS || _BROKEN_CLONED_GLOB_UNDEF;
   }
 }
 
@@ -369,14 +371,25 @@ sub _ex_as_strings {
 
     my $newclass = ref $ex;
 
-    if (Devel::Confess::_BAD_CLONE_DESTROY && exists $Devel::Confess::CLONED{$id}) {
+    my $cloned;
+    # delete_package is more complete, but can explode on some perls
+    if (Devel::Confess::_BROKEN_CLONED_GLOB_UNDEF && delete $Devel::Confess::CLONED{$id}) {
+      $cloned = 1;
+      no strict 'refs';
+      @{"${newclass}::ISA"} = ();
+      my $stash = \%{"${newclass}::"};
+      delete @{$stash}{keys %$stash};
+    }
+    else {
+      Symbol::delete_package($newclass);
+    }
+
+    if (Devel::Confess::_BROKEN_CLONED_DESTROY_REBLESS && $cloned || delete $Devel::Confess::CLONED{$id}) {
       my $destroy = $class->can('DESTROY') || return;
       goto $destroy;
     }
 
     bless $ex, $class;
-
-    Symbol::delete_package($newclass);
 
     # after reblessing, perl will re-dispatch to the class's own DESTROY.
     ();
