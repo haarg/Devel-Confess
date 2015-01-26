@@ -1,6 +1,6 @@
 package Devel::Confess;
 BEGIN {
-  my $can_use_informative_names = $] >= 5.8;
+  my $can_use_informative_names = $] >= 5.008;
   # detect -d:Confess.  disable debugger features for now.  we'll
   # enable them when we need them.
   if (!defined &DB::DB && $^P & 0x02) {
