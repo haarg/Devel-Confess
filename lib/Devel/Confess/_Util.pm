@@ -95,13 +95,24 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
 };
 
 {
-  our $gd;
-  sub _global_destruction () {
-    if (!$gd) {
-      local $SIG{__WARN__} = sub { $gd = $_[0] =~ /global destruction\.\n\z/ };
-      warn 1;
-    }
-    $gd;
+  if (defined ${^GLOBAL_PHASE}) {
+    eval q{
+      sub _global_destruction () { ${^GLOBAL_PHASE} eq q[DESTRUCT] };
+      1;
+    } or die $@;
+  }
+  else {
+    eval q{
+      our $gd;
+      sub _global_destruction () {
+        if (!$gd) {
+          local $SIG{__WARN__} = sub { $gd = $_[0] =~ /global destruction\.\n\z/ };
+          warn 1;
+        }
+        $gd;
+      }
+      1;
+    } or die $@;
   }
 }
 
