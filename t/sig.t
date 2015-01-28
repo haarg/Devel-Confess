@@ -27,10 +27,10 @@ is 0+$called, 1, 'calls outer __DIE__ handler';
 Devel::Confess->unimport;
 is $SIG{__DIE__}, \&CALLED, 'unimport restores __DIE__ handler';
 
-delete $SIG{__DIE__};
+$SIG{__DIE__} = '';
 Devel::Confess->import;
 Devel::Confess->unimport;
-ok !exists $SIG{__DIE__}, 'unimport restores nonexistent __DIE__ handler';
+ok !$SIG{__DIE__}, 'unimport restores nonexistent __DIE__ handler';
 
 sub IGNORE { $called++ }
 sub DEFAULT { $called++ }

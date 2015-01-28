@@ -13,6 +13,8 @@ BEGIN {
     = ($] >= 5.008009 && $] < 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_CLONED_GLOB_UNDEF
     = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
+  *_BROKEN_SIG_DELETE
+    = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
 }
 
 use 5.006;
@@ -131,6 +133,9 @@ sub unimport {
       delete $OLD_SIG{$name};
     }
     else {
+      no warnings 'uninitialized'; # bogus warnings on perl < 5.8.8
+      undef $SIG{$name}
+        if _BROKEN_SIG_DELETE;
       delete $SIG{$name};
     }
   }
