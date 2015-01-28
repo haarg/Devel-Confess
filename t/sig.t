@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 11;
+use Test::More tests => 12;
 use t::lib::capture;
 
 # preload to make sure we only test the effect of our own import
@@ -26,6 +26,11 @@ eval { die };
 is 0+$called, 1, 'calls outer __DIE__ handler';
 Devel::Confess->unimport;
 is $SIG{__DIE__}, \&CALLED, 'unimport restores __DIE__ handler';
+
+delete $SIG{__DIE__};
+Devel::Confess->import;
+Devel::Confess->unimport;
+ok !exists $SIG{__DIE__}, 'unimport restores nonexistent __DIE__ handler';
 
 sub IGNORE { $called++ }
 sub DEFAULT { $called++ }

@@ -114,15 +114,24 @@ sub import {
 }
 
 sub unimport {
-  return
-    unless keys %OLD_SIG;
-  for (qw(__DIE__ __WARN__)) {
-    my $sig = delete $OLD_SIG{$_};
-    if (defined $sig) {
-      $SIG{$_} = $sig;
+  for my $sig (
+    [ __DIE__ => \&_die ],
+    [ __WARN__ => \&_warn ],
+  ) {
+    my ($name, $sub) = @$sig;
+    my $now = $SIG{$name} or next;
+    my $old = $OLD_SIG{$name};
+    if ($now ne $sub && $old) {
+      local $SIG{__WARN__};
+      warn "Can't restore $name handler!\n";
+      delete $SIG{$sig};
+    }
+    elsif ($old) {
+      $SIG{$name} = $old;
+      delete $OLD_SIG{$name};
     }
     else {
-      delete $SIG{$_};
+      delete $SIG{$name};
     }
   }
 }
