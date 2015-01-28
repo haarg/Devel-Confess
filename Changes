@@ -1,5 +1,10 @@
 Release history for Devel-Confess
 
+  - fix incorrect version check that prevented using better names option
+  - fix removing hooks when unimport called
+  - fix stringifying refs in stack trace inside a Safe compartment on old perl
+  - avoid updating stored refaddrs when they haven't changed
+  - less noise when checking for broken threads
   - prevent leaking namespaces even in broken threads
   - fix version check for broken threads
 
