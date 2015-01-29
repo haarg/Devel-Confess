@@ -3,7 +3,7 @@ use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
 
-our $VERSION = '0.007009';
+our $VERSION = '0.007010';
 $VERSION = eval $VERSION;
 
 use Devel::Confess::_Util ();
