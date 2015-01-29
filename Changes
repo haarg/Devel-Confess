@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007010 - 2015-01-29
   - fix incorrect version check that prevented using better names option
   - fix removing hooks when unimport called
   - fix stringifying refs in stack trace inside a Safe compartment on old perl
