@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007011 - 2015-02-03
   - avoid triggering overloads when CLONEing
 
 0.007010 - 2015-01-29
