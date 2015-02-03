@@ -156,6 +156,7 @@ sub _find_sig {
 }
 
 sub _warn {
+  local $SIG{__WARN__};
   my @convert = _convert(@_);
   if (my $warn = _find_sig($OLD_SIG{__WARN__})) {
     $warn->(join('', @convert));
