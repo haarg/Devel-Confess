@@ -224,7 +224,11 @@ our %MESSAGES;
 our %CLONED;
 
 sub CLONE {
-  my %id_map = map { my $ex = $EXCEPTIONS{$_}; $ex ? ($_ => refaddr($ex)) : () } keys %EXCEPTIONS;
+  my %id_map = map {
+    my $ex = $EXCEPTIONS{$_};
+    defined $ex ? ($_ => refaddr($ex)) : ();
+  } keys %EXCEPTIONS;
+
   %EXCEPTIONS = map {; $id_map{$_} => $EXCEPTIONS{$_}} keys %id_map;
   %PACKAGES = map {; $id_map{$_} => $PACKAGES{$_}} keys %id_map;
   %MESSAGES = map {; $id_map{$_} => $MESSAGES{$_}} keys %id_map;
