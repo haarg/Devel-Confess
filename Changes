@@ -1,5 +1,7 @@
 Release history for Devel-Confess
 
+  - avoid triggering overloads when CLONEing
+
 0.007010 - 2015-01-29
   - fix incorrect version check that prevented using better names option
   - fix removing hooks when unimport called
