@@ -9,12 +9,6 @@ BEGIN {
   }
   *_CAN_USE_INFORMATIVE_NAMES
     = $can_use_informative_names ? sub () { 1 } : sub () { 0 };
-  *_BROKEN_CLONED_DESTROY_REBLESS
-    = ($] >= 5.008009 && $] < 5.010000) ? sub () { 1 } : sub () { 0 };
-  *_BROKEN_CLONED_GLOB_UNDEF
-    = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
-  *_BROKEN_SIG_DELETE
-    = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
 }
 
 use 5.006;
@@ -27,7 +21,16 @@ $VERSION = eval $VERSION;
 use Carp ();
 use Symbol ();
 use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val);
-BEGIN { *_can = \&UNIVERSAL::can; }
+BEGIN {
+  *_can = \&UNIVERSAL::can;
+
+  *_BROKEN_CLONED_DESTROY_REBLESS
+    = ($] >= 5.008009 && $] < 5.010000) ? sub () { 1 } : sub () { 0 };
+  *_BROKEN_CLONED_GLOB_UNDEF
+    = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
+  *_BROKEN_SIG_DELETE
+    = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
+}
 
 $Carp::Internal{+__PACKAGE__}++;
 
