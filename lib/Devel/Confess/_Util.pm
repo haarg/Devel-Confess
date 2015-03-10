@@ -6,7 +6,7 @@ no warnings 'once';
 
 use base 'Exporter';
 
-our @EXPORT = qw(blessed refaddr weaken longmess _str_val);
+our @EXPORT = qw(blessed refaddr weaken longmess _str_val _in_END);
 
 use Carp ();
 use Carp::Heavy ();
@@ -98,6 +98,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   if (defined ${^GLOBAL_PHASE}) {
     eval q{
       sub _global_destruction () { ${^GLOBAL_PHASE} eq q[DESTRUCT] }
+      sub _in_END () { ${^GLOBAL_PHASE} eq "END" }
       1;
     } or die $@;
   }
@@ -114,6 +115,35 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
           warn 1;
         }
         $global_phase eq 'DESTRUCT';
+      }
+
+      sub _in_END () {
+        if ($global_phase eq 'RUN' && $^S) {
+          # END blocks are FILO so we can't install one to run first.
+          # only way to detect END reliably seems to be by using caller.
+          # I hate this but it seems to be the best available option.
+          # The top two frames will be an eval and the END block.
+          my $i;
+          1 while CORE::caller(++$i);
+          if ($i > 2) {
+            my @top = CORE::caller($i - 1);
+            my @next = CORE::caller($i - 2);
+            if (
+              $top[3] eq '(eval)'
+              && $next[3] =~ /::END$/
+              && $top[2] == $next[2]
+              && $top[1] eq $next[1]
+              && $top[0] eq 'main'
+              && $next[0] eq 'main'
+            ) {
+              $global_phase = 'END';
+            }
+          }
+        }
+        $global_phase eq 'END';
+      }
+      END {
+        $global_phase = 'END';
       }
 
       1;

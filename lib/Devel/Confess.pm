@@ -14,13 +14,15 @@ BEGIN {
 use 5.006;
 use strict;
 use warnings;
+no warnings 'once';
 
 our $VERSION = '0.007011';
 $VERSION = eval $VERSION;
 
 use Carp ();
 use Symbol ();
-use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val);
+use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val _in_END);
+use Config ();
 BEGIN {
   *_can = \&UNIVERSAL::can;
 
@@ -30,6 +32,11 @@ BEGIN {
     = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_SIG_DELETE
     = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
+  my $debugging = defined &Config::non_bincompat_options
+    ? (Config::non_bincompat_options() =~ /\bDEBUGGING\b/)
+    : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/);
+  *_DEBUGGING
+    = $debugging ? sub () { 1 } : sub () { 0 };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -176,6 +183,12 @@ sub _die {
     $sig->(join('', @convert));
   }
   _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
+  if (_DEBUGGING && _in_END) {
+    local $SIG{__WARN__};
+    warn @convert;
+    $! ||= 1;
+    return;
+  }
   die @convert;
 }
 
