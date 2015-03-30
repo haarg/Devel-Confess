@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.007012 - 2015-03-30
   - avoid re-throwing errors during END on debugging perls
 
 0.007011 - 2015-02-03
