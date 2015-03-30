@@ -1,5 +1,7 @@
 Release history for Devel-Confess
 
+  - avoid re-throwing errors during END on debugging perls
+
 0.007011 - 2015-02-03
   - avoid triggering overloads when CLONEing
 
