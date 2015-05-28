@@ -2,7 +2,9 @@ use t::lib::threads_check;
 use threads;
 use strict;
 use warnings;
-use Test::More tests => 3;
+
+use t::lib::test;
+
 use Devel::Confess;
 
 my $gone = 0;
@@ -60,3 +62,5 @@ my $cleared = threads->create(sub {
 
 ok $cleared,
   'cloned exception cleans up namespace when destroyed';
+
+done_testing;
