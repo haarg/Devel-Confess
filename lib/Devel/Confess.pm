@@ -33,7 +33,7 @@ BEGIN {
   *_BROKEN_SIG_DELETE
     = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
   my $debugging = defined &Config::non_bincompat_options
-    ? (Config::non_bincompat_options() =~ /\bDEBUGGING\b/)
+    ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
     : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/);
   *_DEBUGGING
     = $debugging ? sub () { 1 } : sub () { 0 };
