@@ -32,11 +32,12 @@ BEGIN {
     = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_SIG_DELETE
     = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
-  my $debugging = defined &Config::non_bincompat_options
-    ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
-    : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/);
   *_DEBUGGING
-    = $debugging ? sub () { 1 } : sub () { 0 };
+    = (
+      defined &Config::non_bincompat_options
+        ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
+        : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
+    ) ? sub () { 1 } : sub () { 0 };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
