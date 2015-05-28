@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
-use t::lib::capture;
+use t::lib::capture capture_color => ['-MDevel::Confess=color'];
 
 if ($^O eq 'MSWin32') {
   plan skip_all => 'color option requires Win32::Console::ANSI in Windows'
@@ -36,8 +36,7 @@ my $expected = <<"END_OUTPUT";
 END_OUTPUT
 
 {
-  local @CAPTURE_OPTS = ('-MDevel::Confess=color');
-  my $out = capture $code;
+  my $out = capture_color $code;
   is $out, $expected, 'error message properly colorized';
 }
 

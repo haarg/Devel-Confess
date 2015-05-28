@@ -5,15 +5,27 @@ use warnings;
 use File::Temp qw(tempfile);
 use IPC::Open3;
 use File::Spec;
-use base qw(Exporter);
 
-our @EXPORT = qw(capture *CAPTURE_OPTS);
-
-our @CAPTURE_OPTS;
 my @PERL5OPTS = map "-I$_", @INC;
 
-sub capture ($) {
-    my ($code) = @_;
+sub import {
+  my $class = shift;
+  my $target = caller;
+  my @args = @_ ? @_ : 'capture';
+  while (my $sub = shift @args) {
+    die "bad option: $sub"
+      if ref $sub;
+    my @opts;
+    @opts = @{ shift @args }
+      if ref $args[0];
+    my $export = sub ($) { _capture($_[0], @opts) };
+    no strict 'refs';
+    *{"${target}::${sub}"} = $export;
+  }
+}
+
+sub _capture {
+    my ($code, @opts) = @_;
 
     my ($fh, $filename) = tempfile()
       or die "can't open temp file: $!";
@@ -21,7 +33,7 @@ sub capture ($) {
     close $fh;
 
     open my $in, '<', File::Spec->devnull or die "can't open null: $!";
-    open3( $in, my $out, undef, $^X, @PERL5OPTS, @CAPTURE_OPTS, $filename)
+    open3( $in, my $out, undef, $^X, @PERL5OPTS, @opts, $filename)
       or die "Couldn't open subprocess: $!\n";
     my $output = do { local $/; <$out> };
     close $in;

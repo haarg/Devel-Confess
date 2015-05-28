@@ -1,7 +1,10 @@
 use strict;
 use warnings;
 use Test::More tests => 2;
-use t::lib::capture;
+use t::lib::capture
+  capture_as_debugger => ['-d:Confess'],
+  capture_with_debugger => ['-d', '-MDevel::Confess'],
+;
 use Cwd qw(cwd);
 
 my $code = <<'END_CODE';
@@ -31,21 +34,18 @@ Beware! at test-block.pl line 1.
 END_OUTPUT
 
 {
-  local @CAPTURE_OPTS = ('-d:Confess');
-  my $out = capture $code;
+  my $out = capture_as_debugger $code;
   $out =~ s/\A.*?^started\s+//ms;
   is $out, $expected, 'Devel::Confess usable as a debugger';
 }
 
 {
-  local @CAPTURE_OPTS = ('-d', '-MDevel::Confess');
-
   local %ENV = %ENV;
   delete $ENV{$_} for grep /^PERL5?DB/, keys %ENV;
   delete $ENV{LOGDIR};
   $ENV{HOME} = cwd;
   $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=1';
-  my $out = capture $code;
+  my $out = capture_with_debugger $code;
   $out =~ s/\A.*?^started\s+//ms;
   like $out, qr/^\Q$expected/, 'Devel::Confess usable with the debugger';
 }

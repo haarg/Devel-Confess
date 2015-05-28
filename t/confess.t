@@ -1,9 +1,7 @@
 use strict;
 use warnings;
 use Test::More tests => 20;
-use t::lib::capture;
-
-@CAPTURE_OPTS = ('-MDevel::Confess');
+use t::lib::capture capture => ['-MDevel::Confess'];
 
 is capture <<'END_CODE', <<'END_OUTPUT', 'basic test';
 package A;

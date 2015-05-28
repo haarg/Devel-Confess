@@ -1,7 +1,10 @@
 use strict;
 use warnings;
 use Test::More;
-use t::lib::capture;
+use t::lib::capture
+  'capture',
+  capture_builtin => ['-MDevel::Confess::Builtin'],
+;
 use Devel::Confess::Builtin ();
 
 my @class = (
@@ -40,9 +43,7 @@ sub g {
 A::f();
 }
 END
-  @CAPTURE_OPTS = ('-MDevel::Confess::Builtin');
-  my $before = capture $code.'B::g();';
-  @CAPTURE_OPTS = ();
+  my $before = capture_builtin $code.'B::g();';
   my $after = capture $code.'require Devel::Confess::Builtin;Devel::Confess::Builtin->import(); B::g();';
   like $before, qr/B::g/, "verbose when loaded before $class";
   like $after, qr/B::g/, "verbose when loaded after $class";
