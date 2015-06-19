@@ -446,10 +446,10 @@ Devel::Confess - Include stack traces on all warnings and errors
 Use on the command line:
 
   # Make every warning and error include a full stack trace
-  perl -MDevel::Confess script.pl
-
-  # equivalent short form
   perl -d:Confess script.pl
+
+  # Also usable as a module
+  perl -MDevel::Confess script.pl
 
   # display warnings in yellow and errors in red
   perl -d:Confess=color script.pl
@@ -479,13 +479,13 @@ of errors.  L<Carp>'s C<carp> and C<confess> functions will also be made to
 include stack traces.
 
   # it works for explicit die's and warn's
-  $ perl -MDevel::Confess -e 'sub f { die "arghh" }; sub g { f }; g'
+  $ perl -d:Confess -e 'sub f { die "arghh" }; sub g { f }; g'
   arghh at -e line 1.
           main::f() called at -e line 1
           main::g() called at -e line 1
 
   # it works for interpreter-thrown failures
-  $ perl -MDevel::Confess -w -e 'sub f { $a = shift; @a = @$a };' \
+  $ perl -d:Confess -w -e 'sub f { $a = shift; @a = @$a };' \
                                         -e 'sub g { f(undef) }; g'
   Use of uninitialized value $a in array dereference at -e line 1.
           main::f(undef) called at -e line 2
