@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 20;
+use Test::More tests => 23;
 use t::lib::capture capture => ['-MDevel::Confess'];
 
 is capture <<'END_CODE', <<'END_OUTPUT', 'basic test';
@@ -135,6 +135,21 @@ foo();
 END_CODE
 ARRAY\(0x\w+\) at test-block\.pl line 1\.
 	main::foo\(\) called at test-block\.pl line 2
+END_OUTPUT
+
+  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type rethrowing non-object ref";
+use Carp;
+sub foo {
+#line 1 test-block.pl
+  $type [1];
+}
+#line 2 test-block.pl
+eval { foo() };
+die;
+END_CODE
+ARRAY\(0x\w+\) at test-block\.pl line 1\.
+	main::foo\(\) called at test-block\.pl line 2
+	eval \{...\} called at test-block.pl line 2
 END_OUTPUT
 
 }

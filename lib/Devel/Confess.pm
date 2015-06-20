@@ -329,7 +329,7 @@ sub _convert {
 
     weaken($EXCEPTIONS{$id} = $ex);
     $PACKAGES{$id} = undef;
-    $MESSAGES{$id} ||= $message;
+    $message = $MESSAGES{$id} ||= $message;
 
     return ($^S ? @_ : ( @_, $message ));
   }
