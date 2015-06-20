@@ -94,7 +94,7 @@ foo at bar
 	main::bar() called at test-block.pl line 3
 END_OUTPUT
 
-  like capture <<"END_CODE", qr/${\<<'END_OUTPUT'}/, "$type with object";
+  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with object";
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -124,7 +124,7 @@ message at test-block.pl line 1.
 	main::foo() called at test-block.pl line 2
 END_OUTPUT
 
-  like capture <<"END_CODE", qr/${\<<'END_OUTPUT'}/, "$type with non-object ref";
+  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with non-object ref";
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -133,7 +133,7 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-^ARRAY\(0x\w+\) at test-block\.pl line 1\.
+ARRAY\(0x\w+\) at test-block\.pl line 1\.
 	main::foo\(\) called at test-block\.pl line 2
 END_OUTPUT
 
