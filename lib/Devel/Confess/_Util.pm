@@ -88,9 +88,9 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   };
 } || eval q{
   sub {
-    my $class = blessed($_[0]);
+    my $class = &blessed;
     return "$_[0]" unless defined $class;
-    return sprintf("%s=%s(0x%x)", &blessed, &reftype, &refaddr);
+    return sprintf("%s=%s(0x%x)", $class, &reftype, &refaddr);
   };
 };
 

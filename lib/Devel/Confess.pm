@@ -173,6 +173,7 @@ sub _warn {
     $warn->(join('', @convert));
   }
   else {
+    @convert = _ex_as_strings(@convert);
     _colorize(\@convert, 33) if $OPTIONS{color};
     warn @convert;
   }
@@ -183,6 +184,7 @@ sub _die {
   if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
     $sig->(join('', @convert));
   }
+  @convert = $^S ? @convert : _ex_as_strings(@convert);
   _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
   if (_DEBUGGING && _in_END) {
     local $SIG{__WARN__};
@@ -196,14 +198,9 @@ sub _die {
 sub _colorize {
   my ($convert, $color) = @_;
   if ($ENV{DEVEL_CONFESS_FORCE_COLOR} || -t *STDERR) {
-    if (blessed $convert->[0]) {
-      if ($convert->[0]->isa('Devel::Confess::_Attached')) {
-        splice @$convert, 0, 1, _ex_as_strings($convert->[0]);
-      }
-      else {
-        $convert->[0] =~ s/(.*)/\e[${color}m$1\e[m/;
-        return;
-      }
+    if (@$convert == 1) {
+      $convert->[0] = s/(.*)//;
+      unshift @$convert, $1;
     }
     $convert->[0] = "\e[${color}m$convert->[0]\e[m";
   }
@@ -320,7 +317,7 @@ sub _convert {
     }
 
     bless $ex, $newclass;
-    $ex;
+    return $ex;
   }
   elsif (ref($ex = $_[0])) {
     my $id = refaddr($ex);
@@ -329,9 +326,9 @@ sub _convert {
 
     weaken($EXCEPTIONS{$id} = $ex);
     $PACKAGES{$id} = undef;
-    $message = $MESSAGES{$id} ||= $message;
+    $MESSAGES{$id} ||= $message;
 
-    return ($^S ? @_ : ( @_, $message ));
+    return $ex;
   }
   elsif ((caller(1))[0] eq 'Carp') {
     my $out = join('', @_);
@@ -360,13 +357,29 @@ sub _convert {
 
 sub _ex_as_strings {
   my $ex = $_[0];
+  return @_
+    unless ref $ex;
   my $id = refaddr($ex);
   my $class = $PACKAGES{$id};
   my $message = $MESSAGES{$id};
-  my $newclass = ref $ex;
-  bless $ex, $class;
-  my $out = "$ex";
-  bless $ex, $newclass;
+  my $out;
+  if (blessed $ex) {
+    my $newclass = ref $ex;
+    bless $ex, $class if $class;
+    if ($OPTIONS{dump} && !overload::OverloadedStringify($ex)) {
+      $out = _ref_formatter($ex);
+    }
+    else {
+      $out = "$ex";
+    }
+    bless $ex, $newclass if $class;
+  }
+  elsif ($OPTIONS{dump}) {
+    $out = _ref_formatter($ex);
+  }
+  else {
+    $out = "$ex";
+  }
   return ($out, $message);
 }
 

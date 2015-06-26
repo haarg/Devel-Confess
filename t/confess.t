@@ -3,7 +3,7 @@ use warnings;
 BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
-use Test::More tests => 23;
+use Test::More tests => 32;
 use t::lib::capture capture => ['-MDevel::Confess'];
 
 is capture <<'END_CODE', <<'END_OUTPUT', 'basic test';
@@ -127,6 +127,41 @@ message at test-block.pl line 1.
 	main::foo() called at test-block.pl line 2
 END_OUTPUT
 
+  {
+    local $ENV{DEVEL_CONFESS_OPTIONS} = 'dump';
+
+    like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with object + dump";
+use Carp;
+sub foo {
+#line 1 test-block.pl
+  $type bless {}, 'NoOverload';
+}
+#line 2 test-block.pl
+foo();
+END_CODE
+bless\( \{\}, 'NoOverload' \) at test-block\.pl line 1\.
+	main::foo\(\) called at test-block\.pl line 2
+END_OUTPUT
+
+    is capture <<"END_CODE", <<'END_OUTPUT', "$type with object with overload + dump";
+use Carp;
+{
+  package HasOverload;
+  use overload '""' => sub { "message" };
+}
+sub foo {
+#line 1 test-block.pl
+  $type bless {}, 'HasOverload';
+}
+#line 2 test-block.pl
+foo();
+END_CODE
+message at test-block.pl line 1.
+	main::foo() called at test-block.pl line 2
+END_OUTPUT
+  }
+
+
   like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with non-object ref";
 use Carp;
 sub foo {
@@ -140,7 +175,21 @@ ARRAY\(0x\w+\) at test-block\.pl line 1\.
 	main::foo\(\) called at test-block\.pl line 2
 END_OUTPUT
 
-  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type rethrowing non-object ref";
+  local $ENV{DEVEL_CONFESS_OPTIONS} = 'dump';
+  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with non-object ref + dump";
+use Carp;
+sub foo {
+#line 1 test-block.pl
+  $type [1];
+}
+#line 2 test-block.pl
+foo();
+END_CODE
+\[1\] at test-block\.pl line 1\.
+	main::foo\(\) called at test-block\.pl line 2
+END_OUTPUT
+
+  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type rethrowing non-object ref + dump";
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -148,9 +197,11 @@ sub foo {
 }
 #line 2 test-block.pl
 eval { foo() };
+print STDERR \$@ . "\n";
 die;
 END_CODE
-ARRAY\(0x\w+\) at test-block\.pl line 1\.
+ARRAY\(0x\w+\)
+\[1\] at test-block\.pl line 1\.
 	main::foo\(\) called at test-block\.pl line 2
 	eval \{...\} called at test-block.pl line 2
 END_OUTPUT
