@@ -1,5 +1,9 @@
 Release history for Devel-Confess
 
+  - if dump option is used, bare references and objects without stringify
+    overloads will be dumpered when being output to the screen
+  - stack trace properly attached to bare references are rethrown and will be
+    output to the screen
   - avoid Test::More in threads test to limit code run as much as possible
   - other test cleanups
   - fix DEBUGGING detection in newer perls
