@@ -485,13 +485,13 @@ Can also be used inside a script:
 =head1 DESCRIPTION
 
 This module is meant as a debugging aid. It can be used to make a script
-complain loudly with stack backtraces when warn()ing or die()ing.  Unlike other
-similar modules (e.g. L<Carp::Always>), it includes stack traces even when
-exception objects are thrown.
+complain loudly with stack backtraces when C<warn()>ing or C<die()>ing.
+Unlike other similar modules (e.g. L<Carp::Always>), stack traces will also be
+included when exception objects are thrown.
 
-The stack traces are generated using L<Carp>, and will look work for all types
-of errors.  L<Carp>'s C<carp> and C<confess> functions will also be made to
-include stack traces.
+The stack traces are generated using L<Carp>, and will work for all types of
+errors.  L<Carp>'s C<carp> and C<croak> functions will also be made to include
+stack traces.
 
   # it works for explicit die's and warn's
   $ perl -d:Confess -e 'sub f { die "arghh" }; sub g { f }; g'
@@ -506,10 +506,15 @@ include stack traces.
           main::f(undef) called at -e line 2
           main::g() called at -e line 2
 
-Internally, this is implemented with C<$SIG{__WARN__}> and C<$SIG{__DIE__}>
-hooks.
+Internally, this is implemented with L<$SIG{__WARN__}|perlvar/%SIG> and
+L<$SIG{__DIE__}|perlvar/%SIG> hooks.
 
 Stack traces are also included if raw non-object references are thrown.
+
+This module is compatible with all perl versions back to 5.6.2, without
+additional prerequisites.  It contains workarounds for a number of bugs in the
+perl interpreter, some of which effect comparatively simpler modules, like
+L<Carp::Always>.
 
 =head1 METHODS
 
@@ -532,7 +537,9 @@ stack traces on supported exception types.  Disabled by default.
 =item C<dump>
 
 Dumps the contents of references in arguments in stack trace, instead
-of only showing their stringified version.  Shows up to three references deep.
+of only showing their stringified version.  Also causes exceptions that are
+non-object references and objects without string overloads to be dumped if
+being displayed.  Shows up to three references deep.
 Disabled by default.
 
 =item C<dump0>, C<dump1>, C<dump2>, etc
@@ -625,10 +632,7 @@ L<Carp::Always::Dump>
 
 =back
 
-Please report bugs via CPAN RT
-http://rt.cpan.org/NoAuth/Bugs.html?Dist=Devel-Confess.
-
-=head1 BUGS
+=head1 CAVEATS
 
 This module uses several ugly tricks to do its work and surely has bugs.
 
@@ -636,29 +640,47 @@ This module uses several ugly tricks to do its work and surely has bugs.
 
 =item *
 
-This module does not play well with other modules which fusses
-around with C<warn>, C<die>, C<$SIG{'__WARN__'}>,
-C<$SIG{'__DIE__'}>.
+This module uses C<$SIG{__WARN__}> and C<$SIG{__DIE__}> to accomplish its goal,
+and thus may not play well with other modules that try to use these hooks.
+Significant effort has gone into making this work as well as possible, but
+global variables like these can never be fully encapsulated.
+
+=item
+
+To provide stack traces on exception objects, this module re-blesses the
+exception objects into a generated class.  While it tries to have the smallest
+effect it can, some things cannot be worked around.  In particular,
+C<ref($exception)> will return a different value than may be expected.  Any
+module that relies on the specific return value from C<ref> like already has
+bugs though.
 
 =back
 
+=head1 SUPPORT
+
+Please report bugs via
+L<CPAN RT|http://rt.cpan.org/NoAuth/Bugs.html?Dist=Devel-Confess>.
+
+
 =head1 AUTHORS
 
-=over
+=over 4
 
 =item *
 
 Graham Knop <haarg@haarg.org>
+
+=back
+
+=head1 CONTRIBUTORS
+
+=over 4
 
 =item *
 
 Adriano Ferreira <ferreira@cpan.org>
 
 =back
-
-=head1 CONTRIBUTORS
-
-None yet.
 
 =head1 COPYRIGHT
 
