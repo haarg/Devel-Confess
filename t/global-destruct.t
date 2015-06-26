@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 no warnings 'once';
 use Devel::Confess;
 use POSIX ();

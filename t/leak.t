@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Scalar::Util;
 use Test::More
   defined &Scalar::Util::weaken ? (tests => 4)

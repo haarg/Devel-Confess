@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Test::More tests => 3;
 use Safe;
 use Devel::Confess ();

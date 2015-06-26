@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Test::More tests => 2;
 use t::lib::capture
   capture_as_debugger => ['-d:Confess'],

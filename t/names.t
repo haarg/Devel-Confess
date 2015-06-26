@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Devel::Confess ();
 use Test::More
   Devel::Confess::_CAN_USE_INFORMATIVE_NAMES ? (tests => 2)

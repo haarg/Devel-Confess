@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Test::More;
 use t::lib::capture capture_color => ['-MDevel::Confess=color'];
 

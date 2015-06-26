@@ -2,6 +2,9 @@ use t::lib::threads_check;
 use threads;
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 
 use t::lib::test;
 

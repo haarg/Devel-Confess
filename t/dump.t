@@ -1,5 +1,8 @@
 use strict;
 use warnings;
+BEGIN {
+  $ENV{DEVEL_CONFESS_OPTIONS} = '';
+}
 use Carp ();
 use Test::More defined &Carp::format_arg
   ? (tests => 5)
