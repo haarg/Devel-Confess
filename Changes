@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.008000 - 2015-06-26
   - if dump option is used, bare references and objects without stringify
     overloads will be dumpered when being output to the screen
   - stack trace properly attached to bare references are rethrown and will be
