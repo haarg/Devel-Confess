@@ -156,6 +156,7 @@ sub _find_sig {
   my $sig = $_[0];
   return undef
     if !defined $sig;
+  local $@;
   return $sig
     if ref $sig && eval { \&{$sig} };
   return undef
