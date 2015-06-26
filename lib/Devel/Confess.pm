@@ -21,7 +21,7 @@ $VERSION = eval $VERSION;
 
 use Carp ();
 use Symbol ();
-use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val _in_END);
+use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val _in_END _can_stringify);
 use Config ();
 BEGIN {
   *_can = \&UNIVERSAL::can;
@@ -174,7 +174,7 @@ sub _warn {
   }
   else {
     @convert = _ex_as_strings(@convert);
-    _colorize(\@convert, 33) if $OPTIONS{color};
+    @convert = _colorize(33, @convert) if $OPTIONS{color};
     warn @convert;
   }
 }
@@ -184,26 +184,27 @@ sub _die {
   if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
     $sig->(join('', @convert));
   }
-  @convert = $^S ? @convert : _ex_as_strings(@convert);
-  _colorize(\@convert, 31) if $OPTIONS{color} && !$^S;
+  @convert = _can_stringify ? _ex_as_strings(@convert) : @convert;
+  @convert = _colorize(31, @convert) if $OPTIONS{color} && _can_stringify;
   if (_DEBUGGING && _in_END) {
     local $SIG{__WARN__};
     warn @convert;
     $! ||= 1;
     return;
   }
-  die @convert;
+  die @convert unless ref $convert[0];
 }
 
 sub _colorize {
-  my ($convert, $color) = @_;
+  my ($color, @convert) = @_;
   if ($ENV{DEVEL_CONFESS_FORCE_COLOR} || -t *STDERR) {
-    if (@$convert == 1) {
-      $convert->[0] = s/(.*)//;
-      unshift @$convert, $1;
+    if (@convert == 1) {
+      $convert[0] = s/(.*)//;
+      unshift @convert, $1;
     }
-    $convert->[0] = "\e[${color}m$convert->[0]\e[m";
+    $convert[0] = "\e[${color}m$convert[0]\e[m";
   }
+  return @convert;
 }
 
 sub _ref_formatter {

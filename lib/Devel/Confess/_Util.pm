@@ -6,7 +6,7 @@ no warnings 'once';
 
 use base 'Exporter';
 
-our @EXPORT = qw(blessed refaddr weaken longmess _str_val _in_END);
+our @EXPORT = qw(blessed refaddr weaken longmess _str_val _in_END _can_stringify);
 
 use Carp ();
 use Carp::Heavy ();
@@ -149,6 +149,32 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
       1;
     } or die $@;
   }
+}
+
+if ($] < 5.008) {
+  eval q{
+    sub _can_stringify () {
+      my $i = 0;
+      while (my @caller = caller($i++)) {
+        if ($caller[3] eq '(eval)') {
+          return 0;
+        }
+        elsif ($caller[7]) {
+          return 0;
+        }
+      }
+      return 1;
+    }
+    1;
+  } or die $@;
+}
+else {
+  eval q{
+    sub _can_stringify () {
+      defined $^S && !$^S;
+    }
+    1;
+  } or die $@;
 }
 
 1;
