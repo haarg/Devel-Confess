@@ -233,6 +233,8 @@ sub _stack_trace {
   $message;
 }
 
+# these are package varibles to control their lifetime.  they should not be
+# used externally.
 our $PACK_SUFFIX = 'A000';
 
 our %EXCEPTIONS;
