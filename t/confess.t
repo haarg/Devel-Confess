@@ -4,9 +4,19 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 32;
-use t::lib::capture capture => ['-MDevel::Confess'];
+use t::lib::capture
+  capture => ['-MDevel::Confess'],
+  capture_dump => ['-MDevel::Confess=dump'],
+;
 
-is capture <<'END_CODE', <<'END_OUTPUT', 'basic test';
+sub regexify {
+  my $in = shift;
+  $in =~ s/([^a-zA-Z0-9\s=:!-])/\\$1/g;
+  $in =~ s/!REF\b/0x\\w+/g;
+  return qr/\A$in\z/;
+}
+
+is capture <<"END_CODE",
 package A;
 
 sub f {
@@ -24,24 +34,26 @@ package main;
 #line 3 test-block.pl
 A::g();
 END_CODE
+  <<"END_OUTPUT",
 Beware! at test-block.pl line 1.
-	A::f() called at test-block.pl line 2
-	A::g() called at test-block.pl line 3
+\tA::f() called at test-block.pl line 2
+\tA::g() called at test-block.pl line 3
 END_OUTPUT
+  'basic test';
 
-is capture <<'END_CODE', <<'END_OUTPUT', 'interpreter-thrown warnings';
+is capture <<"END_CODE",
 package A;
 
 sub f {
-	use strict;
-	my $a;
+\tuse strict;
+\tmy \$a;
 #line 1 test-block.pl
-	my @a = @$a;
+\tmy \@a = \@\$a;
 }
 
 sub g {
 #line 2 test-block.pl
-	f();
+\tf();
 }
 
 package main;
@@ -50,22 +62,26 @@ package main;
 A::g();
 
 END_CODE
+  <<"END_OUTPUT",
 Can't use an undefined value as an ARRAY reference at test-block.pl line 1.
-	A::f() called at test-block.pl line 2
-	A::g() called at test-block.pl line 3
+\tA::f() called at test-block.pl line 2
+\tA::g() called at test-block.pl line 3
 END_OUTPUT
+  'interpreter-thrown warnings';
 
 for my $type (qw(die croak confess)) {
 
-  is capture <<"END_CODE" , <<'END_OUTPUT', "$type at root";
+  is capture <<"END_CODE",
 use Carp;
 #line 1 test-block.pl
 $type "foo at bar";
 END_CODE
+    <<"END_OUTPUT",
 foo at bar at test-block.pl line 1.
 END_OUTPUT
+    "$type at root";
 
-  is capture <<"END_CODE" , <<'END_OUTPUT', "$type in sub";
+  is capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -74,15 +90,17 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
+    <<"END_OUTPUT",
 foo at bar at test-block.pl line 1.
-	main::foo() called at test-block.pl line 2
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type in sub";
 
-  is capture <<"END_CODE" , <<'END_OUTPUT', "$type with newline";
+  is capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
-  $type "foo at bar\n";
+  $type "foo at bar\\n";
 }
 sub bar {
 #line 2 test-block.pl
@@ -91,13 +109,15 @@ sub bar {
 #line 3 test-block.pl
 bar();
 END_CODE
+    <<"END_OUTPUT",
 foo at bar
  at test-block.pl line 1.
-	main::foo() called at test-block.pl line 2
-	main::bar() called at test-block.pl line 3
+\tmain::foo() called at test-block.pl line 2
+\tmain::bar() called at test-block.pl line 3
 END_OUTPUT
+    "$type with newline";
 
-  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with object";
+  like capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -106,11 +126,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-NoOverload=HASH\(0x\w+\) at test-block\.pl line 1\.
-	main::foo\(\) called at test-block\.pl line 2
+    regexify(<<"END_OUTPUT"),
+NoOverload=HASH(!REF) at test-block.pl line 1.
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type with object";
 
-  is capture <<"END_CODE", <<'END_OUTPUT', "$type with object with overload";
+  is capture <<"END_CODE",
 use Carp;
 {
   package HasOverload;
@@ -123,14 +145,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
+    <<"END_OUTPUT",
 message at test-block.pl line 1.
-	main::foo() called at test-block.pl line 2
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type with object with overload";
 
-  {
-    local $ENV{DEVEL_CONFESS_OPTIONS} = 'dump';
-
-    like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with object + dump";
+  is capture_dump <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -139,11 +160,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-bless\( \{\}, 'NoOverload' \) at test-block\.pl line 1\.
-	main::foo\(\) called at test-block\.pl line 2
+    <<"END_OUTPUT",
+bless( {}, 'NoOverload' ) at test-block.pl line 1.
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type with object + dump";
 
-    is capture <<"END_CODE", <<'END_OUTPUT', "$type with object with overload + dump";
+  is capture_dump <<"END_CODE",
 use Carp;
 {
   package HasOverload;
@@ -156,13 +179,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
+    <<"END_OUTPUT",
 message at test-block.pl line 1.
-	main::foo() called at test-block.pl line 2
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
-  }
+    "$type with object with overload + dump";
 
-
-  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with non-object ref";
+  like capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -171,12 +194,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-ARRAY\(0x\w+\) at test-block\.pl line 1\.
-	main::foo\(\) called at test-block\.pl line 2
+    regexify(<<"END_OUTPUT"),
+ARRAY(!REF) at test-block.pl line 1.
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type with non-object ref";
 
-  local $ENV{DEVEL_CONFESS_OPTIONS} = 'dump';
-  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type with non-object ref + dump";
+  is capture_dump <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -185,11 +209,13 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-\[1\] at test-block\.pl line 1\.
-	main::foo\(\) called at test-block\.pl line 2
+    <<"END_OUTPUT",
+[1] at test-block.pl line 1.
+\tmain::foo() called at test-block.pl line 2
 END_OUTPUT
+    "$type with non-object ref + dump";
 
-  like capture <<"END_CODE", qr/\A${\<<'END_OUTPUT'}\z/, "$type rethrowing non-object ref + dump";
+  like capture_dump <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -197,13 +223,14 @@ sub foo {
 }
 #line 2 test-block.pl
 eval { foo() };
-print STDERR \$@ . "\n";
+print STDERR \$@ . "\\n";
 die;
 END_CODE
-ARRAY\(0x\w+\)
-\[1\] at test-block\.pl line 1\.
-	main::foo\(\) called at test-block\.pl line 2
-	eval \{...\} called at test-block.pl line 2
+    regexify(<<"END_OUTPUT"),
+ARRAY(!REF)
+[1] at test-block.pl line 1.
+\tmain::foo() called at test-block.pl line 2
+\teval {...} called at test-block.pl line 2
 END_OUTPUT
-
+    "$type rethrowing non-object ref + dump";
 }

@@ -30,10 +30,10 @@ package main;
 A::g();
 END_CODE
 
-my $expected = <<'END_OUTPUT';
+my $expected = <<"END_OUTPUT";
 Beware! at test-block.pl line 1.
-	A::f() called at test-block.pl line 2
-	A::g() called at test-block.pl line 3
+\tA::f() called at test-block.pl line 2
+\tA::g() called at test-block.pl line 3
 END_OUTPUT
 
 {
