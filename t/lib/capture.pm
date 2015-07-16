@@ -33,11 +33,11 @@ sub _capture {
     close $fh;
 
     open my $in, '<', File::Spec->devnull or die "can't open null: $!";
-    open3( $in, my $out, undef, $^X, @PERL5OPTS, @opts, $filename)
-      or die "Couldn't open subprocess: $!\n";
+    my $pid = open3( $in, my $out, undef, $^X, @PERL5OPTS, @opts, $filename);
     my $output = do { local $/; <$out> };
     close $in;
     close $out;
+    waitpid $pid, 0;
 
     $output =~ s/\r\n?/\n/g;
 
