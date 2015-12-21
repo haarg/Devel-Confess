@@ -156,11 +156,11 @@ sub _find_sig {
   my $sig = $_[0];
   return undef
     if !defined $sig;
-  local $@;
   return $sig
-    if ref $sig && eval { \&{$sig} };
+    if ref $sig;
   return undef
     if $sig eq 'DEFAULT' || $sig eq 'IGNORE';
+  # this isn't really needed because %SIG entries are always fully qualified
   package #hide
     main;
   no strict 'refs';
@@ -170,7 +170,7 @@ sub _find_sig {
 sub _warn {
   local $SIG{__WARN__};
   my @convert = _convert(@_);
-  if (my $sig = _find_sig($OLD_SIG{__WARN__})) {
+  if (my $sig = \&{_find_sig($OLD_SIG{__WARN__})}) {
     $sig->(ref $convert[0] ? $convert[0] : join('', @convert));
   }
   else {
@@ -182,7 +182,7 @@ sub _warn {
 sub _die {
   local $SIG{__DIE__};
   my @convert = _convert(@_);
-  if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
+  if (my $sig = \&{_find_sig($OLD_SIG{__DIE__})}) {
     $sig->(ref $convert[0] ? $convert[0] : join('', @convert));
   }
   @convert = _ex_as_strings(@convert) if _can_stringify;
