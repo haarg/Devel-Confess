@@ -1,12 +1,13 @@
 use strict;
 use warnings;
-use Test::More tests => 12;
+use Test::More tests => 13;
 use Devel::Confess ();
 use Scalar::Util qw(blessed);
 
 sub DEFAULT { die "DEFAULT\n" }
 sub IGNORE  { die "IGNORE\n" }
 sub string  { die "string\n" }
+sub stub;
 sub Namespaced::string { die "Namespaced::string\n" }
 {
   no strict 'refs';
@@ -73,6 +74,7 @@ for my $sig (
   'DEFAULT',
   'IGNORE',
   'string',
+  'stub',
   'Namespaced::string',
   'nonexistant',
   CodeOverload->new,
