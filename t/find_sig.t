@@ -60,6 +60,7 @@ sub check_find {
 }
 
 sub check_sig {
+  no warnings 'uninitialized';
   local $SIG{__DIE__} = $_[0];
   _ex {
     die "none\n";
