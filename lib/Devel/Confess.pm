@@ -170,8 +170,8 @@ sub _find_sig {
 sub _warn {
   local $SIG{__WARN__};
   my @convert = _convert(@_);
-  if (my $sig = \&{_find_sig($OLD_SIG{__WARN__})}) {
-    $sig->(ref $convert[0] ? $convert[0] : join('', @convert));
+  if (my $sig = _find_sig($OLD_SIG{__WARN__})) {
+    (\&$sig)->(ref $convert[0] ? $convert[0] : join('', @convert));
   }
   else {
     @convert = _ex_as_strings(@convert);
@@ -182,8 +182,8 @@ sub _warn {
 sub _die {
   local $SIG{__DIE__};
   my @convert = _convert(@_);
-  if (my $sig = \&{_find_sig($OLD_SIG{__DIE__})}) {
-    $sig->(ref $convert[0] ? $convert[0] : join('', @convert));
+  if (my $sig = _find_sig($OLD_SIG{__DIE__})) {
+    (\&$sig)->(ref $convert[0] ? $convert[0] : join('', @convert));
   }
   @convert = _ex_as_strings(@convert) if _can_stringify;
   @convert = _colorize(31, @convert) if $OPTIONS{color} && _can_stringify;
