@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 13;
+use Test::More tests => 14;
 use Devel::Confess ();
 use Scalar::Util qw(blessed);
 
@@ -71,6 +71,7 @@ for my $sig (
   undef,
   0,
   {},
+  '',
   $coderef,
   'DEFAULT',
   'IGNORE',
