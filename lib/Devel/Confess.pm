@@ -46,41 +46,83 @@ our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
 $NoTrace{'Moose::Error::Default'}++;
 
-our %OPTIONS;
+our %OPTIONS = (
+  objects   => !!1,
+  builtin   => undef,
+  dump      => !!0,
+  color     => !!0,
+  source    => !!0,
+  errors    => !!1,
+  warnings  => !!1,
+  better_names => !!1,
+);
+our %ENABLEOPTS = (
+  dump => 3,
+  color => $ENV{DEVEL_CONFESS_FORCE_COLOR} ? 'force' : !!1,
+);
+our %NUMOPTS = (
+  dump => 1,
+);
+
+our @options = sort keys %OPTIONS;
+our ($opt_match) =
+  map qr/^-?(?:(no[_-]?)(?:$_)|(?:$_)(?:(\d+)|=(.*)|))$/,
+  join '|',
+  map {
+    my $o = $_;
+    $o =~ s/_/[-_]?/g;
+    '('.$o.')';
+  }
+  @options;
 
 sub _parse_options {
-  my @opts = map { /^-?(no[_-])?(.*)/; [ $_, $2, $1 ? 0 : 1 ] } @_;
-  if (!keys %OPTIONS) {
-    %OPTIONS = (
-      objects   => 1,
-      builtin   => undef,
-      dump      => 0,
-      color     => 0,
-      source    => 0,
-      errors    => 1,
-      warnings  => 1,
-      better_names => 1,
-    );
-    local $@;
-    eval {
-      _parse_options(
-        grep length, split /[\s,]+/, $ENV{DEVEL_CONFESS_OPTIONS}||''
-      );
-    } or warn "DEVEL_CONFESS_OPTIONS: $@";
-  }
-  for my $opt (@opts) {
-    if ($opt->[1] =~ /^dump(\d*)$/) {
-      $opt->[1] = 'dump';
-      $opt->[2] = length $1 ? ($1 || 'inf') : 3;
+  my %opts;
+  my @bad;
+  while (@_) {
+    my $arg = shift;
+    my @match = defined $arg ? $arg =~ $opt_match : ();
+    if (@match) {
+      my $no = shift @match;
+      my $equal = pop @match;
+      my $num = pop @match;
+      my ($opt) =
+        map $options[$_ % @options],
+        grep defined $match[$_],
+        0 .. $#match;
+      my $value
+        = defined $no       ? !!0
+        : defined $equal    ? $equal
+        : defined $num      ? $num
+        : @_ && (!defined $_[0] || $_[0] =~ /^\d+$/) ? shift
+        : defined $ENABLEOPTS{$opt} ? $ENABLEOPTS{$opt}
+        : !!1;
+
+      if ($NUMOPTS{$opt}) {
+        $value
+          = !defined $value ? 0
+          : !$value ? 0+'inf'
+          : 0+$value;
+      }
+      $opts{$opt} = $value;
+    }
+    else {
+      push @bad, $arg;
     }
   }
-  if (my @bad = grep { !exists $OPTIONS{$_->[1]} } @opts) {
+  if (@bad) {
     local $SIG{__DIE__};
-    Carp::croak("invalid options: " . join(', ', map { $_->[0] } @bad));
+    Carp::croak("invalid options: " . join(', ', map { defined $_ ? $_ : '[undef]' } @bad));
   }
-  $OPTIONS{$_->[1]} = $_->[2]
-    for @opts;
-  1;
+  \%opts;
+}
+
+if (my $env = $ENV{DEVEL_CONFESS_OPTIONS}) {
+  local $@;
+  eval {
+    my $options = _parse_options(grep length, split /[\s,]+/, $env);
+    @OPTIONS{keys %$options} = values %$options;
+    1;
+  } or warn "DEVEL_CONFESS_OPTIONS: $@";
 }
 
 our %OLD_SIG;
@@ -88,7 +130,8 @@ our %OLD_SIG;
 sub import {
   my $class = shift;
 
-  _parse_options(@_);
+  my $options = _parse_options(@_);
+  @OPTIONS{keys %$options} = values %$options;
 
   if (defined $OPTIONS{builtin}) {
     require Devel::Confess::Builtin;
@@ -198,7 +241,7 @@ sub _die {
 
 sub _colorize {
   my ($color, @convert) = @_;
-  if ($ENV{DEVEL_CONFESS_FORCE_COLOR} || -t *STDERR) {
+  if ($OPTIONS{color} eq 'force' || -t *STDERR) {
     if (@convert == 1) {
       $convert[0] = s/(.*)//;
       unshift @convert, $1;
