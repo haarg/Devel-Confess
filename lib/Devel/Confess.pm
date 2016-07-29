@@ -58,7 +58,6 @@ our %OPTIONS = (
 );
 our %ENABLEOPTS = (
   dump => 3,
-  color => $ENV{DEVEL_CONFESS_FORCE_COLOR} ? 'force' : !!1,
 );
 our %NUMOPTS = (
   dump => 1,

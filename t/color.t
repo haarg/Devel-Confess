@@ -4,9 +4,7 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 1;
-use t::lib::capture capture_color => ['-MDevel::Confess=color'];
-
-$ENV{DEVEL_CONFESS_FORCE_COLOR} = 1;
+use t::lib::capture capture_color => ['-MDevel::Confess=color=force'];
 
 is capture_color <<"END_CODE",
 package A;
