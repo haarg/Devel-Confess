@@ -690,7 +690,7 @@ and thus may not play well with other modules that try to use these hooks.
 Significant effort has gone into making this work as well as possible, but
 global variables like these can never be fully encapsulated.
 
-=item
+=item *
 
 To provide stack traces on exception objects, this module re-blesses the
 exception objects into a generated class.  While it tries to have the smallest
