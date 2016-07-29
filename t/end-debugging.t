@@ -4,7 +4,8 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 1;
-use t::lib::capture capture => ['-MDevel::Confess'];
+use lib 't/lib';
+use Capture capture => ['-MDevel::Confess'];
 
 unlike capture <<"END_CODE", qr/Assertion failed/, "die in END";
 sub error {

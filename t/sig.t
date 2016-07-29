@@ -4,7 +4,8 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 12;
-use t::lib::capture;
+use lib 't/lib';
+use Capture;
 
 # preload to make sure we only test the effect of our own import
 use base ();

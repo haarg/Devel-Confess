@@ -4,7 +4,8 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 32;
-use t::lib::capture
+use lib 't/lib';
+use Capture
   capture => ['-MDevel::Confess'],
   capture_dump => ['-MDevel::Confess=dump'],
 ;

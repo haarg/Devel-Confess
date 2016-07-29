@@ -1,4 +1,5 @@
-use t::lib::threads_check;
+use lib 't/lib';
+use ThreadsCheck;
 use threads;
 use strict;
 use warnings;
@@ -6,7 +7,7 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 
-use t::lib::test;
+use MiniTest;
 
 use Devel::Confess;
 

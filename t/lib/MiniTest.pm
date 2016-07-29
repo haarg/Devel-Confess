@@ -1,4 +1,4 @@
-package t::lib::test;
+package MiniTest;
 use strict;
 use warnings;
 

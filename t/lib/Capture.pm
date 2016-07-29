@@ -1,4 +1,4 @@
-package t::lib::capture;
+package Capture;
 use strict;
 use warnings;
 

@@ -1,7 +1,8 @@
 use strict;
 use warnings;
 use Test::More;
-use t::lib::capture
+use lib 't/lib';
+use Capture
   'capture',
   capture_builtin => ['-MDevel::Confess::Builtin'],
 ;
