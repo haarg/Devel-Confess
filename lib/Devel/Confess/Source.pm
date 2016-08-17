@@ -3,11 +3,13 @@ use 5.006;
 use strict;
 use warnings FATAL => 'all';
 
-$^P |= $] >= 5.010 ? 0x400 : do {
-  *DB::DB = sub {}
-    unless defined &DB::DB;
-  0x02;
-};
+sub import {
+  $^P |= $] >= 5.010 ? 0x400 : do {
+    *DB::DB = sub {}
+      unless defined &DB::DB;
+    0x02;
+  };
+}
 
 my $want_color = $^O ne 'MSWin32' ? 1 : eval {
   require Win32::Console::ANSI;

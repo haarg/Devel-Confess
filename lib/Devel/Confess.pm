@@ -141,6 +141,7 @@ sub import {
   }
   if ($OPTIONS{source}) {
     require Devel::Confess::Source;
+    Devel::Confess::Source->import;
   }
   if ($OPTIONS{color} && $^O eq 'MSWin32') {
     if (eval { require Win32::Console::ANSI }) {
