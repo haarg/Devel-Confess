@@ -52,6 +52,7 @@ our %OPTIONS = (
   dump      => !!0,
   color     => !!0,
   source    => 0,
+  evalsource => 0,
   errors    => !!1,
   warnings  => !!1,
   better_names => !!1,
@@ -59,10 +60,12 @@ our %OPTIONS = (
 our %ENABLEOPTS = (
   dump => 3,
   source => 3,
+  evalsource => 3,
 );
 our %NUMOPTS = (
   dump => 1,
   source => 1,
+  evalsource => 1,
 );
 
 our @options = sort keys %OPTIONS;
@@ -139,7 +142,7 @@ sub import {
     my $do = $OPTIONS{builtin} ? 'import' : 'unimport';
     Devel::Confess::Builtin->$do;
   }
-  if ($OPTIONS{source}) {
+  if ($OPTIONS{source} || $OPTIONS{evalsource}) {
     require Devel::Confess::Source;
     Devel::Confess::Source->import;
   }
@@ -272,8 +275,9 @@ sub _stack_trace {
     = $OPTIONS{dump} ? \&_ref_formatter : \&_str_val;
   my $message = &longmess;
   $message =~ s/\.?$/./m;
-  if ($OPTIONS{source}) {
-    $message .= Devel::Confess::Source::source_trace(1, $OPTIONS{source});
+  if ($OPTIONS{source} || $OPTIONS{evalsource}) {
+    $message .= Devel::Confess::Source::source_trace(1,
+      $OPTIONS{evalsource} ? ($OPTIONS{evalsource}, 1) : $OPTIONS{source});
   }
   $message;
 }
@@ -607,6 +611,17 @@ by default.
 
 Enables source display, but with a specified number of lines of context to show.
 Context of 0 will show the entire source of the files.
+
+=item C<evalsource>
+
+Similar to the source option, but only shows includes source for string evals.
+Useful for seeing the results of code generation.  Disabled by default.
+Overrides the source option.
+
+=item C<evalsource0>, C<evalsource1>, C<evalsource2>, etc
+
+Enables eval source display, but with a specified number of lines of context to
+show.  Context of 0 will show the entire source of the evals.
 
 =item C<better_names>
 

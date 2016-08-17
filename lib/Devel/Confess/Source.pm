@@ -18,7 +18,7 @@ my $want_color = $^O ne 'MSWin32' ? 1 : eval {
 };
 
 sub source_trace {
-  my ($skip, $context) = @_;
+  my ($skip, $context, $evalonly) = @_;
   $skip ||= 1;
   $skip += $Carp::CarpLevel;
   $context ||= 3;
@@ -27,6 +27,8 @@ sub source_trace {
   while (my ($pack, $file, $line) = (caller($i++))[0..2]) {
     next
       if $Carp::Internal{$pack} || $Carp::CarpInternal{$pack};
+    next
+      if $evalonly && $file !~ /^\(eval \d+\)(?:\[|$)/;
     my $lines = _get_content($file) || next;
 
     my $start = $line - $context;
@@ -46,6 +48,8 @@ sub source_trace {
     }
     push @out, $context;
   }
+  return ''
+    if !@out;
   return join(('=' x 75) . "\n",
     '',
     join(('-' x 75) . "\n", @out),
