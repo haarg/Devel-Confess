@@ -51,16 +51,18 @@ our %OPTIONS = (
   builtin   => undef,
   dump      => !!0,
   color     => !!0,
-  source    => !!0,
+  source    => 0,
   errors    => !!1,
   warnings  => !!1,
   better_names => !!1,
 );
 our %ENABLEOPTS = (
   dump => 3,
+  source => 3,
 );
 our %NUMOPTS = (
   dump => 1,
+  source => 1,
 );
 
 our @options = sort keys %OPTIONS;
@@ -270,7 +272,7 @@ sub _stack_trace {
   my $message = &longmess;
   $message =~ s/\.?$/./m;
   if ($OPTIONS{source}) {
-    $message .= Devel::Confess::Source::source_trace(1);
+    $message .= Devel::Confess::Source::source_trace(1, $OPTIONS{source});
   }
   $message;
 }
@@ -599,6 +601,11 @@ Colorizes error messages in red and warnings in yellow.  Disabled by default.
 
 Includes a snippet of the source for each level of the stack trace. Disabled
 by default.
+
+=item C<source0>, C<source1>, C<source2>, etc
+
+Enables source display, but with a specified number of lines of context to show.
+Context of 0 will show the entire source of the files.
 
 =item C<better_names>
 
