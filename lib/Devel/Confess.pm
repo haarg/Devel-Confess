@@ -383,29 +383,25 @@ sub _convert {
 
     return $ex;
   }
-  elsif ((caller(1))[0] eq 'Carp') {
-    my $out = join('', @_);
 
+  my $out = join('', @_);
+
+  if (caller(1) eq 'Carp') {
     my $long = longmess();
     my $long_trail = $long;
     $long_trail =~ s/.*?\n//;
     $out =~ s/\Q$long\E\z|\Q$long_trail\E\z//
       or $out =~ s/(.*) at .*? line .*?\n\z/$1/;
+  }
 
-    return ($out, _stack_trace());
-  }
-  else {
-    my $message = _stack_trace();
-    $message =~ s/^(.*\n?)//;
-    my $where = $1;
-    my $find = $where;
-    $find =~ s/(\.?\n?)\z//;
-    $find = qr/\Q$find\E(?: during global destruction)?(\.?\n?)/;
-    my $out = join('', @_);
-    $out =~ s/($find)\z//
-      and $where = $1;
-    return ($out, $where . $message);
-  }
+  my $trace = _stack_trace();
+  $trace =~ s/^(.*\n?)//;
+  my $where = $1;
+  my $find = $where;
+  $find =~ s/(\.?\n?)\z//;
+  $out =~ s/(\Q$find\E(?: during global destruction)?(\.?\n?))(?:\Q$trace\E)?\z//
+    and $where = $1;
+  return ($out, $where . $trace);
 }
 
 sub _ex_as_strings {
