@@ -394,13 +394,29 @@ sub _convert {
       or $out =~ s/(.*) at .*? line .*?\n\z/$1/;
   }
 
+  my $source_trace;
+  $out =~ s/^(={75}\ncontext for .*^={75}\n\z)//ms
+    and $source_trace = $1;
   my $trace = _stack_trace();
   $trace =~ s/^(.*\n?)//;
   my $where = $1;
+  my $new_source_trace;
+  $trace =~ s/^(={75}\ncontext for .*^={75}\n\z)//ms
+    and $new_source_trace = $1;
   my $find = $where;
   $find =~ s/(\.?\n?)\z//;
   $out =~ s/(\Q$find\E(?: during global destruction)?(\.?\n?))(?:\Q$trace\E)?\z//
     and $where = $1;
+  if (defined $source_trace) {
+    if (defined $new_source_trace) {
+      $new_source_trace =~ s/^={75}\n//;
+      $source_trace =~ s/^(([-=])\2{74}\n)(?:\Q$new_source_trace\E)?\z/$1/ms;
+    }
+    $trace .= $source_trace;
+  }
+  if (defined $new_source_trace) {
+    $trace .= $new_source_trace;
+  }
   return ($out, $where . $trace);
 }
 
