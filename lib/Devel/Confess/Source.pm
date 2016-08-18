@@ -63,7 +63,7 @@ sub _get_content {
   if (exists $::{'_<'.$file} && @{ '::_<'.$file }) {
     return \@{ '::_<'.$file };
   }
-  elsif ($file =~ /^\(eval \d+\)$/) {
+  elsif ($file =~ /^\(eval \d+\)(?:\[.*\])?$/) {
     return ["Can't get source of evals unless debugger available!"];
   }
   elsif (open my $fh, '<', $file) {
@@ -71,7 +71,7 @@ sub _get_content {
     return \@lines;
   }
   else {
-    return ["Source not available!"];
+    return ["Source file not available!"];
   }
 }
 
