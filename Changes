@@ -1,5 +1,14 @@
 Release history for Devel-Confess
 
+  - documentation fixes and improvements
+  - more accurate handling of existing %SIG handlers
+  - updated option parsing to allow setting specific values, such as color=force
+  - stop relying on . being in @INC in tests
+  - source option now accepts a number of lines of context to show
+  - added evalsource option, which shows the source only of string evals
+  - fix adding redundant trace information when errors are rethrown
+  - improved warning messages when source option can't find source to display
+
 0.008000 - 2015-06-26
   - if dump option is used, bare references and objects without stringify
     overloads will be dumpered when being output to the screen
