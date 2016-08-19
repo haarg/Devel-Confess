@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.009001 - 2016-08-19
   - fix handling of infinite options (dump, source, evalsource)
   - fix evalsource test by running with the debugger
 
