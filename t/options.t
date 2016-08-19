@@ -27,7 +27,7 @@ is_deeply parse('better-names'), { better_names => 1 }, 'using dash';
 
 is_deeply parse('dump'), { dump => 3 }, 'dump defaults to 3 when enabled';
 
-is_deeply parse('dump0'), { dump => 'inf'+0 }, 'dump converts 0 to inf';
+is_deeply parse('dump0'), { dump => 1e10000 }, 'dump converts 0 to inf';
 
 eval { parse('noobjects5') };
 like $@, qr/noobjects5/, 'invalid: no with numeric joined';

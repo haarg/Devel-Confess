@@ -104,7 +104,7 @@ sub _parse_options {
       if ($NUMOPTS{$opt}) {
         $value
           = !defined $value ? 0
-          : !$value ? 0+'inf'
+          : !$value ? 1e10000
           : 0+$value;
       }
       $opts{$opt} = $value;
