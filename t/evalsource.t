@@ -4,31 +4,42 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Test::More tests => 3;
+use lib 't/lib';
+use Capture
+  capture_with_debugger => ['-d', '-MDevel::Confess=evalsource'],
+;
+use Cwd qw(cwd);
 
-use Devel::Confess qw(evalsource);
-
-my $file = __FILE__;
-my @evals;
-
+my $code = <<'END_CODE';
+#line 1 test-block.pl
 sub Foo::foo {
   die "error";
 }
 
 sub Bar::bar {
-  push @evals, 'Foo::foo()';
-  eval $evals[-1];
+  eval 'Foo::foo()';
   die $@ if $@;
 }
 
-push @evals, 'sub Baz::baz { Bar::bar() } 1;';
-eval $evals[-1] or die $@;
+eval 'sub Baz::baz { Bar::bar() } 1;' or die $@;
 
-eval { Baz::baz() };
+Baz::baz();
+END_CODE
 
-for my $eval (@evals) {
-  ok $@ =~ /context for \(eval \d+\).* line 1:\n\s*1 :.*\Q$eval\E/,
-    'trace includes eval text';
+{
+  local %ENV = %ENV;
+  delete $ENV{$_} for grep /^PERL5?DB/, keys %ENV;
+  delete $ENV{LOGDIR};
+  $ENV{HOME} = cwd;
+  $ENV{PERLDB_OPTS} = 'NonStop noTTY dieLevel=1';
+  my $out = capture_with_debugger $code;
+
+  for my $eval ('Foo::foo()', 'sub Baz::baz { Bar::bar() } 1;') {
+    like $out, qr/context for \(eval \d+\).* line 1:\n\s*1 :.*\Q$eval\E/,
+      'trace includes eval text';
+  }
+
+  my @file_context = grep !/\(eval/, $out =~ /context for (.*?) line/g;
+  is join(', ', @file_context), '',
+    'trace only includes eval frames';
 }
-
-ok $@ !~ /context for \Q$file\E/,
-  'trace only includes eval frames';
