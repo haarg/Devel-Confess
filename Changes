@@ -1,5 +1,8 @@
 Release history for Devel-Confess
 
+  - fix handling of infinite options (dump, source, evalsource)
+  - fix evalsource test by running with the debugger
+
 0.009000 - 2016-08-18
   - documentation fixes and improvements
   - more accurate handling of existing %SIG handlers
