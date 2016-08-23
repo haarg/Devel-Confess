@@ -405,7 +405,8 @@ sub _convert {
     and $new_source_trace = $1;
   my $find = $where;
   $find =~ s/(\.?\n?)\z//;
-  $out =~ s/(\Q$find\E(?: during global destruction)?(\.?\n?))(?:\Q$trace\E)?\z//
+  my $trace_re = length $trace ? "(?:\Q$trace\E)?" : '';
+  $out =~ s/(\Q$find\E(?: during global destruction)?(\.?\n?))$trace_re\z//
     and $where = $1;
   if (defined $source_trace) {
     if (defined $new_source_trace) {
