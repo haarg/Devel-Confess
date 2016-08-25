@@ -4,6 +4,7 @@ BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
 use Carp ();
+use Carp::Heavy ();
 use Test::More defined &Carp::format_arg
   ? (tests => 5)
   : (skip_all => 'Dump option not supported on ancient carp');
