@@ -35,17 +35,22 @@ use Scalar::Util qw(blessed refaddr reftype);
       $level++;
     }
     local $CarpLevel = $CarpLevel + $level;
+    no strict 'refs';
+    local *{"threads::tid"} = \&threads::tid
+      if defined &threads::tid && !defined &{"threads::tid"};
     &longmess;
   };
-} : Carp->VERSION <= 1.04 ? eval q{
+} : eval q{
   package
     Carp;
-  our ($CarpLevel);
   sub {
     local $INC{'Carp/Heavy.pm'} = $INC{'Carp/Heavy.pm'} || 1;
+    no strict 'refs';
+    local *{"threads::tid"} = \&threads::tid
+      if defined &threads::tid && !defined &{"threads::tid"};
     &longmess;
   };
-} : \&Carp::longmess;
+} or die $@;
 
 if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   my $format_arg = \&Carp::format_arg;
