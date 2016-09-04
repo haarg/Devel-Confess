@@ -309,7 +309,7 @@ sub CLONE {
 sub _update_ex_refs {
   for my $id ( keys %EXCEPTIONS ) {
     next
-      if $EXCEPTIONS{$id};
+      if defined $EXCEPTIONS{$id};
     delete $EXCEPTIONS{$id};
     delete $PACKAGES{$id};
     delete $MESSAGES{$id};
@@ -327,7 +327,7 @@ sub _convert {
       if ! do {no strict 'refs'; defined &{"Devel::Confess::_Attached::DESTROY"} };
     my $message;
     my $id = refaddr($ex);
-    if ($EXCEPTIONS{$id}) {
+    if (defined $EXCEPTIONS{$id}) {
       return @_
         if $ex->isa("Devel::Confess::_Attached");
 
