@@ -396,13 +396,15 @@ sub _convert {
 
   my $source_trace;
   $out =~ s/^(={75}\ncontext for .*^={75}\n\z)//ms
-    and $source_trace = $1;
+    and $source_trace = $1
+    if $OPTIONS{source} || $OPTIONS{evalsource};
   my $trace = _stack_trace();
   $trace =~ s/^(.*\n?)//;
   my $where = $1;
   my $new_source_trace;
   $trace =~ s/^(={75}\ncontext for .*^={75}\n\z)//ms
-    and $new_source_trace = $1;
+    and $new_source_trace = $1
+    if $OPTIONS{source} || $OPTIONS{evalsource};
   my $find = $where;
   $find =~ s/(\.?\n?)\z//;
   my $trace_re = length $trace ? "(?:\Q$trace\E)?" : '';
