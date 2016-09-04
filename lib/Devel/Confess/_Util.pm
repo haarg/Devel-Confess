@@ -58,7 +58,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
     package
       Carp;
     our $in_recurse;
-    $format_arg; # capture
+    $format_arg if 0; # capture
     no warnings 'redefine';
     sub format_arg {
       if (! $in_recurse) {
@@ -83,21 +83,24 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
       }
       $format_arg->(@_);
     }
+    1;
   } or die $@;
 }
 
-*_str_val = eval q{
-  sub {
+eval q{
+  sub _str_val {
     no overloading;
     "$_[0]";
-  };
-} || eval q{
-  sub {
+  }
+  1;
+} or eval q{
+  sub _str_val {
     my $class = &blessed;
     return "$_[0]" unless defined $class;
     return sprintf("%s=%s(0x%x)", $class, &reftype, &refaddr);
-  };
-};
+  }
+  1;
+} or die $@;
 
 {
   if (defined ${^GLOBAL_PHASE}) {
