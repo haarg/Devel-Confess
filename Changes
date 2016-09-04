@@ -1,5 +1,12 @@
 Release history for Devel-Confess
 
+  - fix test failures on perl 5.10.0
+  - fix regex warnings in perl 5.6
+  - work around threads issue in Carp in Safe compartments
+  - don't skip dump test on Carp versions that use Carp::Heavy
+  - test diagnostic and formatting improvements
+  - avoid triggering overloads when checking for exception existence
+
 0.009001 - 2016-08-19
   - fix handling of infinite options (dump, source, evalsource)
   - fix evalsource test by running with the debugger
