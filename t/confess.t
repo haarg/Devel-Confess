@@ -222,14 +222,16 @@ sub foo {
   $type [1];
 }
 #line 2 test-block.pl
-eval { foo() };
+eval {
+  foo();
+};
 print STDERR \$@ . "\\n";
 die;
 END_CODE
     <<"END_OUTPUT",
 ARRAY(0xXXXXXX)
 [1] at test-block.pl line 1.
-\tmain::foo() called at test-block.pl line 2
+\tmain::foo() called at test-block.pl line 3
 \teval {...} called at test-block.pl line 2
 END_OUTPUT
     "$type rethrowing non-object ref + dump";
