@@ -68,7 +68,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
 
         my $arg;
         if (
-          Scalar::Util::blessed($_[0])
+          Devel::Confess::_Util::blessed($_[0])
           && eval { $_[0]->can('CARP_TRACE') }
         ) {
           return $_[0]->CARP_TRACE;
