@@ -9,7 +9,7 @@ BEGIN {
 
 use MiniTest;
 
-use Devel::Confess;
+use Devel::Confess qw(nowarnings);
 
 my $gone = 0;
 {
