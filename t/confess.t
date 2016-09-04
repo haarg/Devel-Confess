@@ -10,11 +10,10 @@ use Capture
   capture_dump => ['-MDevel::Confess=dump'],
 ;
 
-sub regexify {
+sub scrub_refaddr ($) {
   my $in = shift;
-  $in =~ s/([^a-zA-Z0-9\s=:!-])/\\$1/g;
-  $in =~ s/!REF\b/0x\\w+/g;
-  return qr/\A$in\z/;
+  $in =~ s/\b([A-Z]+)\(0x[0-9a-zA-Z]+\)/$1(0xXXXXXX)/g;
+  $in;
 }
 
 is capture <<"END_CODE",
@@ -118,7 +117,7 @@ foo at bar
 END_OUTPUT
     "$type with newline";
 
-  like capture <<"END_CODE",
+  is scrub_refaddr capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -127,8 +126,8 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-    regexify(<<"END_OUTPUT"),
-NoOverload=HASH(!REF) at test-block.pl line 1.
+    <<"END_OUTPUT",
+NoOverload=HASH(0xXXXXXX) at test-block.pl line 1.
 \tmain::foo() called at test-block.pl line 2
 END_OUTPUT
     "$type with object";
@@ -186,7 +185,7 @@ message at test-block.pl line 1.
 END_OUTPUT
     "$type with object with overload + dump";
 
-  like capture <<"END_CODE",
+  is scrub_refaddr capture <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -195,8 +194,8 @@ sub foo {
 #line 2 test-block.pl
 foo();
 END_CODE
-    regexify(<<"END_OUTPUT"),
-ARRAY(!REF) at test-block.pl line 1.
+    <<"END_OUTPUT",
+ARRAY(0xXXXXXX) at test-block.pl line 1.
 \tmain::foo() called at test-block.pl line 2
 END_OUTPUT
     "$type with non-object ref";
@@ -216,7 +215,7 @@ END_CODE
 END_OUTPUT
     "$type with non-object ref + dump";
 
-  like capture_dump <<"END_CODE",
+  is scrub_refaddr capture_dump <<"END_CODE",
 use Carp;
 sub foo {
 #line 1 test-block.pl
@@ -227,8 +226,8 @@ eval { foo() };
 print STDERR \$@ . "\\n";
 die;
 END_CODE
-    regexify(<<"END_OUTPUT"),
-ARRAY(!REF)
+    <<"END_OUTPUT",
+ARRAY(0xXXXXXX)
 [1] at test-block.pl line 1.
 \tmain::foo() called at test-block.pl line 2
 \teval {...} called at test-block.pl line 2
