@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.009002 - 2016-09-04
   - fix test failures on perl 5.10.0
   - fix regex warnings in perl 5.6
   - work around threads issue in Carp in Safe compartments
