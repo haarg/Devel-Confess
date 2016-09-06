@@ -159,7 +159,7 @@ eval q{
   }
 }
 
-if ($] < 5.008) {
+if ("$]" < 5.008) {
   eval q{
     sub _can_stringify () {
       my $i = 0;

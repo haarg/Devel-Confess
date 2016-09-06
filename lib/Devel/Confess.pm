@@ -1,6 +1,6 @@
 package Devel::Confess;
 BEGIN {
-  my $can_use_informative_names = $] >= 5.008;
+  my $can_use_informative_names = "$]" >= 5.008;
   # detect -d:Confess.  disable debugger features for now.  we'll
   # enable them when we need them.
   if (!defined &DB::DB && $^P & 0x02) {
@@ -27,11 +27,11 @@ BEGIN {
   *_can = \&UNIVERSAL::can;
 
   *_BROKEN_CLONED_DESTROY_REBLESS
-    = ($] >= 5.008009 && $] < 5.010000) ? sub () { 1 } : sub () { 0 };
+    = ("$]" >= 5.008009 && "$]" < 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_CLONED_GLOB_UNDEF
-    = ($] > 5.008009 && $] <= 5.010000) ? sub () { 1 } : sub () { 0 };
+    = ("$]" > 5.008009 && "$]" <= 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_SIG_DELETE
-    = ($] < 5.008008) ? sub () { 1 } : sub () { 0 };
+    = ("$]" < 5.008008) ? sub () { 1 } : sub () { 0 };
   *_DEBUGGING
     = (
       defined &Config::non_bincompat_options

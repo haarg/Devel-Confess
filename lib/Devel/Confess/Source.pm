@@ -4,7 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 
 sub import {
-  $^P |= $] >= 5.010 ? 0x400 : do {
+  $^P |= "$]" >= 5.010 ? 0x400 : do {
     *DB::DB = sub {}
       unless defined &DB::DB;
     0x02;
