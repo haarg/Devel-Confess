@@ -15,9 +15,13 @@ my %META = (
     test => { requires => {
       'File::Temp'  => 0,
       'Test::More'  => 0,
+      'Safe'        => 0,
+      'Cwd'         => 0,
+      'File::Spec'  => 0,
+      'IPC::Open3'  => 0,
     } },
     runtime => { requires => {
-      'perl' => '5.6.0',
+      'perl' => '5.006',
       'Carp' => 0,
       'Scalar::Util' => 0,
     } },
