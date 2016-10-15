@@ -457,31 +457,39 @@ sub _ex_as_strings {
   use overload
     fallback => 1,
     'bool' => sub {
+      package
+        Devel::Confess;
       my $ex = $_[0];
-      my $class = $PACKAGES{Devel::Confess::refaddr($ex)};
+      my $class = $PACKAGES{refaddr($ex)};
       my $newclass = ref $ex;
       bless $ex, $class;
-      my $out = !!$ex;
+      my $out = $ex ? !!1 : !!0;
       bless $ex, $newclass;
       return $out;
     },
     '0+' => sub {
+      package
+        Devel::Confess;
       my $ex = $_[0];
-      my $class = $PACKAGES{Devel::Confess::refaddr($ex)};
+      my $class = $PACKAGES{refaddr($ex)};
       my $newclass = ref $ex;
       bless $ex, $class;
-      my $out = 0+sprintf '%f', $ex;
+      my $out = 0+sprintf '%.20g', $ex;
       bless $ex, $newclass;
       return $out;
     },
     '""' => sub {
-      return join('', Devel::Confess::_ex_as_strings(@_));
+      package
+        Devel::Confess;
+      join('', _ex_as_strings(@_));
     },
   ;
 
   sub DESTROY {
+    package
+      Devel::Confess;
     my $ex = $_[0];
-    my $id = Devel::Confess::refaddr($ex);
+    my $id = refaddr($ex);
     my $class = delete $PACKAGES{$id} or return;
     delete $MESSAGES{$id};
     delete $EXCEPTIONS{$id};
@@ -490,7 +498,7 @@ sub _ex_as_strings {
 
     my $cloned;
     # delete_package is more complete, but can explode on some perls
-    if (Devel::Confess::_BROKEN_CLONED_GLOB_UNDEF && delete $Devel::Confess::CLONED{$id}) {
+    if (_BROKEN_CLONED_GLOB_UNDEF && delete $CLONED{$id}) {
       $cloned = 1;
       no strict 'refs';
       @{"${newclass}::ISA"} = ();
@@ -501,7 +509,7 @@ sub _ex_as_strings {
       Symbol::delete_package($newclass);
     }
 
-    if (Devel::Confess::_BROKEN_CLONED_DESTROY_REBLESS && $cloned || delete $Devel::Confess::CLONED{$id}) {
+    if (_BROKEN_CLONED_DESTROY_REBLESS && $cloned || delete $CLONED{$id}) {
       my $destroy = $class->can('DESTROY') || return;
       goto $destroy;
     }
