@@ -4,7 +4,7 @@ use strict;
 use warnings FATAL => 'all';
 no warnings 'once';
 
-use base 'Exporter';
+use Exporter (); BEGIN { *import = \&Exporter::import }
 
 our @EXPORT = qw(blessed refaddr weaken longmess _str_val _in_END _can_stringify);
 
