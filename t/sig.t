@@ -10,6 +10,7 @@ use Capture;
 # preload to make sure we only test the effect of our own import
 use base ();
 use Exporter ();
+use Exporter::Heavy ();
 use Carp ();
 use Carp::Heavy ();
 use Symbol ();
