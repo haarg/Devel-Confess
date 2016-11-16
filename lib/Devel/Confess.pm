@@ -21,11 +21,18 @@ $VERSION = eval $VERSION;
 
 use Carp ();
 use Symbol ();
-use Devel::Confess::_Util qw(blessed refaddr weaken longmess _str_val _in_END _can_stringify);
+use Devel::Confess::_Util qw(
+  blessed
+  refaddr
+  weaken
+  longmess
+  _str_val
+  _in_END
+  _can_stringify
+  _can
+);
 use Config ();
 BEGIN {
-  *_can = \&UNIVERSAL::can;
-
   *_BROKEN_CLONED_DESTROY_REBLESS
     = ("$]" >= 5.008009 && "$]" < 5.010000) ? sub () { 1 } : sub () { 0 };
   *_BROKEN_CLONED_GLOB_UNDEF
@@ -512,7 +519,7 @@ sub _ex_as_strings {
     }
 
     if (_BROKEN_CLONED_DESTROY_REBLESS && $cloned || delete $CLONED{$id}) {
-      my $destroy = $class->can('DESTROY') || return;
+      my $destroy = _can($class, 'DESTROY') || return;
       goto $destroy;
     }
 

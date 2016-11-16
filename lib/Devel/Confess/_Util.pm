@@ -6,7 +6,16 @@ no warnings 'once';
 
 use Exporter (); BEGIN { *import = \&Exporter::import }
 
-our @EXPORT = qw(blessed refaddr weaken longmess _str_val _in_END _can_stringify);
+our @EXPORT = qw(
+  blessed
+  refaddr
+  weaken
+  longmess
+  _str_val
+  _in_END
+  _can_stringify
+  _can
+);
 
 use Carp ();
 use Carp::Heavy ();
@@ -184,5 +193,8 @@ else {
     1;
   } or die $@;
 }
+
+sub _can;
+*_can = \&UNIVERSAL::can;
 
 1;
