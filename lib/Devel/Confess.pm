@@ -38,6 +38,8 @@ BEGIN {
         ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
         : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
     ) ? sub () { 1 } : sub () { 0 };
+  my $inf = 9**9**9;
+  *_INF = sub () { $inf }
 }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -104,7 +106,7 @@ sub _parse_options {
       if ($NUMOPTS{$opt}) {
         $value
           = !defined $value ? 0
-          : !$value ? 1e10000
+          : !$value ? _INF
           : 0+$value;
       }
       $opts{$opt} = $value;
@@ -265,7 +267,7 @@ sub _ref_formatter {
   local $Data::Dumper::Purity = 0;
   local $Data::Dumper::Terse = 1;
   local $Data::Dumper::Useqq = 1;
-  local $Data::Dumper::Maxdepth = $OPTIONS{dump} eq 'inf' ? 0 : $OPTIONS{dump};
+  local $Data::Dumper::Maxdepth = $OPTIONS{dump} == _INF ? 0 : $OPTIONS{dump};
   Data::Dumper::Dumper($_[0]);
 }
 
