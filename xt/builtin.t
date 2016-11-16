@@ -35,17 +35,17 @@ while (@class) {
   my $code = <<END;
 $declare
 
-package A;
+package PackageA;
 sub f {
 $info->{throw}
 }
-package B;
+package PackageB;
 sub g {
-A::f();
+PackageA::f();
 }
 END
-  my $before = capture_builtin $code.'B::g();';
-  my $after = capture $code.'require Devel::Confess::Builtin;Devel::Confess::Builtin->import(); B::g();';
-  like $before, qr/B::g/, "verbose when loaded before $class";
-  like $after, qr/B::g/, "verbose when loaded after $class";
+  my $before = capture_builtin $code.'PackageB::g();';
+  my $after = capture $code.'require Devel::Confess::Builtin;Devel::Confess::Builtin->import(); PackageB::g();';
+  like $before, qr/PackageB::g/, "verbose when loaded before $class";
+  like $after, qr/PackageB::g/, "verbose when loaded after $class";
 }
