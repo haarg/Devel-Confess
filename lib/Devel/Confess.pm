@@ -30,6 +30,7 @@ use Devel::Confess::_Util qw(
   _in_END
   _can_stringify
   _can
+  _isa
 );
 use Config ();
 BEGIN {
@@ -338,7 +339,7 @@ sub _convert {
     my $id = refaddr($ex);
     if (defined $EXCEPTIONS{$id}) {
       return @_
-        if $ex->isa("Devel::Confess::_Attached");
+        if _isa($ex, "Devel::Confess::_Attached");
 
       # something is going very wrong.  possibly from a Safe compartment.
       # we probably broke something, but do the best we can.

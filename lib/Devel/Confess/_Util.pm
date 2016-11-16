@@ -15,6 +15,7 @@ our @EXPORT = qw(
   _in_END
   _can_stringify
   _can
+  _isa
 );
 
 use Carp ();
@@ -193,6 +194,9 @@ else {
     1;
   } or die $@;
 }
+
+sub _isa;
+*_isa = \&UNIVERSAL::isa;
 
 sub _can;
 *_can = \&UNIVERSAL::can;
