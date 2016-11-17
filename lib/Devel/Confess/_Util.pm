@@ -196,9 +196,34 @@ else {
 }
 
 sub _isa;
-*_isa = \&UNIVERSAL::isa;
+if ($INC{'UNIVERSAL/isa.pm'}) {
+  *__isa = \&UNIVERSAL::isa;
+  eval q{
+    sub _isa {
+      local $UNIVERSAL::isa::recursing = 1;
+      local $UNIVERSAL::isa::_recursing = 1;
+      __isa(@_);
+    }
+    1;
+  } or die $@;
+}
+else {
+  *_isa = \&UNIVERSAL::isa;
+}
 
 sub _can;
-*_can = \&UNIVERSAL::can;
+if ($INC{'UNIVERSAL/can.pm'}) {
+  *__can = \&UNIVERSAL::can;
+  eval q{
+    sub _can {
+      local $UNIVERSAL::can::recursing = 1;
+      __can(@_);
+    }
+    1;
+  } or die $@;
+}
+else {
+  *_can = \&UNIVERSAL::can;
+}
 
 1;
