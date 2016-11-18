@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.009003 - 2016-11-18
   - more complete prereq list
   - fix inf handling
   - work around UNIVERSAL::isa and UNIVERSAL::can
