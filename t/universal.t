@@ -3,11 +3,13 @@ use warnings;
 BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
-use UNIVERSAL::isa;
-use UNIVERSAL::can;
+use Test::More ($ENV{RELEASE_TESTING} || eval {
+  require UNIVERSAL::isa;
+  require UNIVERSAL::can;
+}) ? (tests => 1)
+  : (skip_all => 'UNIVERSAL::can and UNIVERSAL::isa required for this test');
 use Carp ();
 use Carp::Heavy ();
-use Test::More tests => 1;
 
 use Devel::Confess qw(nowarnings);
 
