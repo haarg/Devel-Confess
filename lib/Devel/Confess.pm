@@ -16,7 +16,7 @@ use strict;
 use warnings;
 no warnings 'once';
 
-our $VERSION = '0.009002';
+our $VERSION = '0.009003';
 $VERSION = eval $VERSION;
 
 use Carp ();
