@@ -69,19 +69,19 @@ eval { die };
 is 0+$called, 1, 'dispatches by name to package sub';
 Devel::Confess->unimport;
 
-is capture <<"END_CODE",
-BEGIN { \$SIG{__DIE__} = sub { 1 } }
+is capture <<'END_CODE',
+BEGIN { $SIG{__DIE__} = sub { 1 } }
 use Devel::Confess;
 package A;
 
 sub f {
 #line 1 test-block.pl
-    die "Beware!";
+  die "Beware!";
 }
 
 sub g {
 #line 2 test-block.pl
-    f();
+  f();
 }
 
 package main;
@@ -96,19 +96,19 @@ Beware! at test-block.pl line 1.
 END_OUTPUT
   'trace still added when outer __DIE__ exists';
 
-is capture <<"END_CODE", '', 'outer __WARN__ can silence warnings';
-BEGIN { \$SIG{__WARN__} = sub { } }
+is capture <<'END_CODE', '',
+BEGIN { $SIG{__WARN__} = sub { } }
 use Devel::Confess;
 package A;
 
 sub f {
 #line 1 test-block.pl
-    warn "Beware!";
+  warn "Beware!";
 }
 
 sub g {
 #line 2 test-block.pl
-    f();
+  f();
 }
 
 package main;
@@ -116,20 +116,21 @@ package main;
 #line 3 test-block.pl
 A::g();
 END_CODE
+  'outer __WARN__ can silence warnings';
 
-is capture <<"END_CODE",
-BEGIN { \$SIG{__WARN__} = sub { warn \$_[0] } }
+is capture <<'END_CODE',
+BEGIN { $SIG{__WARN__} = sub { warn $_[0] } }
 use Devel::Confess;
 package A;
 
 sub f {
 #line 1 test-block.pl
-    warn "Beware!";
+  warn "Beware!";
 }
 
 sub g {
 #line 2 test-block.pl
-    f();
+  f();
 }
 
 package main;
