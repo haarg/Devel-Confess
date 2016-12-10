@@ -3,7 +3,7 @@ use warnings;
 BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
-use Test::More tests => 12;
+use Test::More tests => 14;
 use lib 't/lib';
 use Capture;
 
@@ -144,3 +144,69 @@ Beware! at test-block.pl line 1.
 \tA::g() called at test-block.pl line 3
 END_OUTPUT
   'outer __WARN__ gets full location';
+
+is capture <<'END_CODE',
+use strict;
+use warnings 'FATAL' => 'all';
+use Devel::Confess;
+BEGIN {
+  my $warn = $SIG{__WARN__} || die;
+  $SIG{__WARN__} = sub { $warn->(@_) };
+}
+use Devel::Confess;
+package A;
+
+sub f {
+#line 1 test-block.pl
+  warn "Beware!";
+}
+
+sub g {
+#line 2 test-block.pl
+  f();
+}
+
+package main;
+
+#line 3 test-block.pl
+A::g();
+END_CODE
+  <<"END_OUTPUT",
+Beware! at test-block.pl line 1.
+\tA::f() called at test-block.pl line 2
+\tA::g() called at test-block.pl line 3
+END_OUTPUT
+  'no infinite loop with mutually recursing __WARN__';
+
+is capture <<'END_CODE',
+use strict;
+use warnings 'FATAL' => 'all';
+use Devel::Confess;
+BEGIN {
+  my $die = $SIG{__DIE__} or die;
+  $SIG{__DIE__} = sub { $die->(\@_) };
+}
+use Devel::Confess;
+package A;
+
+sub f {
+#line 1 test-block.pl
+  die "Beware!";
+}
+
+sub g {
+#line 2 test-block.pl
+  f();
+}
+
+package main;
+
+#line 3 test-block.pl
+A::g();
+END_CODE
+  <<"END_OUTPUT",
+Beware! at test-block.pl line 1.
+\tA::f() called at test-block.pl line 2
+\tA::g() called at test-block.pl line 3
+END_OUTPUT
+  'no infinite loop with mutually recursing __DIE__';
