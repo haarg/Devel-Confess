@@ -1,5 +1,8 @@
 Release history for Devel-Confess
 
+  - prevent handlers from recursing, such as if our handlers are wrapped by other
+    code.  IO::All for example will do this.
+
 0.009003 - 2016-11-18
   - more complete prereq list
   - fix inf handling
