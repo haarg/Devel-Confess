@@ -1,5 +1,6 @@
 Release history for Devel-Confess
 
+0.009004 - 2017-02-14
   - prevent handlers from recursing, such as if our handlers are wrapped by other
     code.  IO::All for example will do this.
 
