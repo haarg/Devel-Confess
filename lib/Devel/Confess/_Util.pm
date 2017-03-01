@@ -31,7 +31,7 @@ sub weaken ($);
 
 sub longmess;
 if (!Carp->VERSION) {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     package
       Carp;
     our (%CarpInternal, %Internal, $CarpLevel);
@@ -59,7 +59,7 @@ if (!Carp->VERSION) {
   } or die $@;
 }
 else {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     package
       Carp;
 
@@ -77,7 +77,7 @@ else {
 
 if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   my $format_arg = \&Carp::format_arg;
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     package
       Carp;
     our $in_recurse;
@@ -113,7 +113,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
 
 sub _str_val;
 if ("$]" >= 5.010_001) {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     sub _str_val {
       no overloading;
       "$_[0]";
@@ -123,7 +123,7 @@ if ("$]" >= 5.010_001) {
   } or die $@;
 }
 else {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     sub _str_val {
       my $class = &blessed;
       return "$_[0]" unless defined $class;
@@ -137,7 +137,7 @@ else {
 sub _global_destruction ();
 sub _in_END ();
 if ("$]" >= 5.014_000) {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     sub _global_destruction () { ${^GLOBAL_PHASE} eq "DESTRUCT" }
     sub _in_END             () { ${^GLOBAL_PHASE} eq "END" }
 
@@ -145,7 +145,7 @@ if ("$]" >= 5.014_000) {
   } or die $@;
 }
 else {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     # this is slightly a lie, but accurate enough for our purposes
     our $global_phase = 'RUN';
 
@@ -196,7 +196,7 @@ else {
 
 sub _can_stringify ();
 if ("$]" < 5.008) {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     sub _can_stringify () {
       my $i = 0;
       while (my @caller = caller($i++)) {
@@ -214,7 +214,7 @@ if ("$]" < 5.008) {
   } or die $@;
 }
 else {
-  eval q{
+  eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
     sub _can_stringify () {
       defined $^S && !$^S;
     }
@@ -237,7 +237,7 @@ if ($INC{'UNIVERSAL/isa.pm'}) {
   }
   if (!defined &_isa) {
     my $isa = \&UNIVERSAL::isa;
-    eval q{
+    eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
       $isa if 0; # capture for 5.6
       sub _isa {
         local $UNIVERSAL::isa::recursing = 1;
@@ -268,7 +268,7 @@ if ($INC{'UNIVERSAL/can.pm'}) {
 
   if (!defined &_can) {
     my $can = \&UNIVERSAL::can;
-    eval q{
+    eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
       $can if 0; # capture for 5.6
       sub _can {
         local $UNIVERSAL::can::recursing = 1;
