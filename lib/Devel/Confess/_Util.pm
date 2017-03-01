@@ -24,10 +24,12 @@ use Scalar::Util qw(blessed refaddr reftype);
 
 # fake weaken if it isn't available.  will cause leaks, but this
 # is a brute force debugging tool, so we can deal with it.
+sub weaken ($);
 *weaken = defined &Scalar::Util::weaken
   ? \&Scalar::Util::weaken
   : sub ($) { 0 };
 
+sub longmess;
 *longmess = !Carp->VERSION ? eval q{
   package
     Carp;
@@ -97,6 +99,7 @@ if (defined &Carp::format_arg && $Carp::VERSION < 1.32) {
   } or die $@;
 }
 
+sub _str_val;
 eval q{
   sub _str_val {
     no overloading;
@@ -112,6 +115,8 @@ eval q{
   1;
 } or die $@;
 
+sub _global_destruction ();
+sub _in_END ();
 {
   if (defined ${^GLOBAL_PHASE}) {
     eval q{
@@ -169,6 +174,7 @@ eval q{
   }
 }
 
+sub _can_stringify ();
 if ("$]" < 5.008) {
   eval q{
     sub _can_stringify () {
