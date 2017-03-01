@@ -30,6 +30,8 @@ my %META = (
       'Ouch'              => 0,
       'Class::Throwable'  => 0,
       'Exception::Base'   => 0,
+      'UNIVERSAL::isa'    => 0,
+      'UNIVERSAL::can'    => 0,
     } },
   },
   resources => {
