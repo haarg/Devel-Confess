@@ -604,7 +604,7 @@ Stack traces are also included if raw non-object references are thrown.
 
 This module is compatible with all perl versions back to 5.6.2, without
 additional prerequisites.  It contains workarounds for a number of bugs in the
-perl interpreter, some of which effect comparatively simpler modules, like
+perl interpreter, some of which affect comparatively simpler modules, like
 L<Carp::Always>.
 
 =head1 METHODS
