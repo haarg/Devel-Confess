@@ -1,7 +1,7 @@
 package Devel::Confess::_Util;
 use 5.006;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 no warnings 'once';
 
 use Exporter (); BEGIN { *import = \&Exporter::import }

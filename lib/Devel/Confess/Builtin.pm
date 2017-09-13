@@ -1,6 +1,6 @@
 package Devel::Confess::Builtin;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 no warnings 'once';
 
 our $VERSION = '0.009004';

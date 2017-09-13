@@ -1,7 +1,7 @@
 package Devel::Confess::Source;
 use 5.006;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 
 sub import {
   $^P |= "$]" >= 5.010 ? 0x400 : do {
