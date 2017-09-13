@@ -17,7 +17,7 @@ use warnings;
 no warnings 'once';
 
 our $VERSION = '0.009004';
-$VERSION = eval $VERSION;
+$VERSION =~ tr/_//d;
 
 use Carp ();
 use Symbol ();
