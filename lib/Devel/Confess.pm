@@ -32,7 +32,6 @@ use Devel::Confess::_Util qw(
   _can
   _isa
 );
-use Config ();
 BEGIN {
   *_BROKEN_CLONED_DESTROY_REBLESS
     = ("$]" >= 5.008009 && "$]" < 5.010000) ? sub () { 1 } : sub () { 0 };
@@ -42,12 +41,14 @@ BEGIN {
     = ("$]" < 5.008008) ? sub () { 1 } : sub () { 0 };
   *_DEBUGGING
     = (
-      defined &Config::non_bincompat_options
+      defined &Internals::V
+        ? (Internals::V())[1] =~ /\bDEBUGGING\b/
+      : require Config && defined &Config::non_bincompat_options
         ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
-        : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
+      : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
     ) ? sub () { 1 } : sub () { 0 };
   my $inf = 9**9**9;
-  *_INF = sub () { $inf }
+  *_INF = sub () { $inf };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
@@ -56,7 +57,7 @@ our %NoTrace;
 $NoTrace{'Throwable::Error'}++;
 $NoTrace{'Moose::Error::Default'}++;
 
-our %OPTIONS = (
+our %DEFAULTS = (
   objects   => !!1,
   builtin   => undef,
   dump      => !!0,
@@ -66,7 +67,9 @@ our %OPTIONS = (
   errors    => !!1,
   warnings  => !!1,
   better_names => !!1,
+  stop      => undef,
 );
+our %OPTIONS = %DEFAULTS;
 our %ENABLEOPTS = (
   dump => 3,
   source => 3,
@@ -314,10 +317,10 @@ sub CLONE {
     defined $ex ? ($_ => refaddr($ex)) : ();
   } keys %EXCEPTIONS;
 
-  %EXCEPTIONS = map {; $id_map{$_} => $EXCEPTIONS{$_}} keys %id_map;
-  %PACKAGES = map {; $id_map{$_} => $PACKAGES{$_}} keys %id_map;
-  %MESSAGES = map {; $id_map{$_} => $MESSAGES{$_}} keys %id_map;
-  %CLONED = map {; $_ => 1 } values %id_map
+  %EXCEPTIONS = map +($id_map{$_} => $EXCEPTIONS{$_}), keys %id_map;
+  %PACKAGES = map +($id_map{$_} => $PACKAGES{$_}), keys %id_map;
+  %MESSAGES = map +($id_map{$_} => $MESSAGES{$_}), keys %id_map;
+  %CLONED = map +($_ => 1), values %id_map
     if _BROKEN_CLONED_DESTROY_REBLESS || _BROKEN_CLONED_GLOB_UNDEF;
   weaken($_)
     for values %EXCEPTIONS;
@@ -451,7 +454,7 @@ sub _ex_as_strings {
   if (blessed $ex) {
     my $newclass = ref $ex;
     bless $ex, $class if $class;
-    if ($OPTIONS{dump} && !overload::OverloadedStringify($ex)) {
+    if ($OPTIONS{dump} && !(defined &overload::OverloadedStringify && overload::OverloadedStringify($ex))) {
       $out = _ref_formatter($ex);
     }
     else {
