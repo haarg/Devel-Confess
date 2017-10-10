@@ -258,6 +258,7 @@ sub _die {
     $! ||= 1;
     return;
   }
+  no warnings 'uninitialized';
   die @convert unless ref $convert[0];
 }
 
