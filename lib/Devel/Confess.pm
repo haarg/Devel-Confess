@@ -32,7 +32,6 @@ use Devel::Confess::_Util qw(
   _can
   _isa
 );
-use Config ();
 BEGIN {
   *_BROKEN_CLONED_DESTROY_REBLESS
     = ("$]" >= 5.008009 && "$]" < 5.010000) ? sub () { 1 } : sub () { 0 };
@@ -42,9 +41,11 @@ BEGIN {
     = ("$]" < 5.008008) ? sub () { 1 } : sub () { 0 };
   *_DEBUGGING
     = (
-      defined &Config::non_bincompat_options
+      defined &Internals::V
+        ? (Internals::V())[1] =~ /\bDEBUGGING\b/
+      : require Config && defined &Config::non_bincompat_options
         ? (grep $_ eq 'DEBUGGING', Config::non_bincompat_options())
-        : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
+      : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
     ) ? sub () { 1 } : sub () { 0 };
   my $inf = 9**9**9;
   *_INF = sub () { $inf }
