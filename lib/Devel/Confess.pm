@@ -315,10 +315,10 @@ sub CLONE {
     defined $ex ? ($_ => refaddr($ex)) : ();
   } keys %EXCEPTIONS;
 
-  %EXCEPTIONS = map {; $id_map{$_} => $EXCEPTIONS{$_}} keys %id_map;
-  %PACKAGES = map {; $id_map{$_} => $PACKAGES{$_}} keys %id_map;
-  %MESSAGES = map {; $id_map{$_} => $MESSAGES{$_}} keys %id_map;
-  %CLONED = map {; $_ => 1 } values %id_map
+  %EXCEPTIONS = map +($id_map{$_} => $EXCEPTIONS{$_}), keys %id_map;
+  %PACKAGES = map +($id_map{$_} => $PACKAGES{$_}), keys %id_map;
+  %MESSAGES = map +($id_map{$_} => $MESSAGES{$_}), keys %id_map;
+  %CLONED = map +($_ => 1), values %id_map
     if _BROKEN_CLONED_DESTROY_REBLESS || _BROKEN_CLONED_GLOB_UNDEF;
   weaken($_)
     for values %EXCEPTIONS;
