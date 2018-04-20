@@ -48,7 +48,7 @@ BEGIN {
       : ($Config::Config{ccflags} =~ /-DDEBUGGING\b/)
     ) ? sub () { 1 } : sub () { 0 };
   my $inf = 9**9**9;
-  *_INF = sub () { $inf }
+  *_INF = sub () { $inf };
 }
 
 $Carp::Internal{+__PACKAGE__}++;
