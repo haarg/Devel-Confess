@@ -3,7 +3,10 @@ use warnings;
 BEGIN {
   $ENV{DEVEL_CONFESS_OPTIONS} = '';
 }
-use Test::More tests => 1;
+use Test::More
+  ($^O eq 'MSWin32' && !eval { require Win32::Console::ANSI })
+    ? (skip_all => 'color option requires Win32::Console::ANSI on Windows')
+    : (tests => 1);
 use lib 't/lib';
 use Capture capture_color => ['-MDevel::Confess=color=force'];
 
