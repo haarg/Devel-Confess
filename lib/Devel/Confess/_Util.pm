@@ -225,15 +225,20 @@ else {
 
 sub _isa;
 if ($INC{'UNIVERSAL/isa.pm'}) {
-  *__isa = \&UNIVERSAL::isa;
-  eval q{
-    sub _isa {
-      local $UNIVERSAL::isa::recursing = 1;
-      local $UNIVERSAL::isa::_recursing = 1;
-      __isa(@_);
-    }
-    1;
-  } or die $@;
+  if (defined &UNIVERSAL::original_isa) {
+    *_isa = \&UNIVERSAL::original_isa;
+  }
+  else {
+    *__isa = \&UNIVERSAL::isa;
+    eval q{
+      sub _isa {
+        local $UNIVERSAL::isa::recursing = 1;
+        local $UNIVERSAL::isa::_recursing = 1;
+        __isa(@_);
+      }
+      1;
+    } or die $@;
+  }
 }
 else {
   *_isa = \&UNIVERSAL::isa;
