@@ -225,29 +225,15 @@ else {
 
 sub _isa;
 if ($INC{'UNIVERSAL/isa.pm'}) {
-  require B;
-  my $pad = B::svref_2object(\&UNIVERSAL::isa)->PADLIST;
-  my ($n, $v) = $pad->ARRAY;
-  my @names = $n->ARRAY;
-  for my $i (0 .. $#names) {
-    if ($names[$i]->can('PV') && $names[$i]->PV eq '$orig') {
-      eval { *_isa = $v->ARRAYelt($i)->object_2svref };
-      last;
+  *__isa = \&UNIVERSAL::isa;
+  eval q{
+    sub _isa {
+      local $UNIVERSAL::isa::recursing = 1;
+      local $UNIVERSAL::isa::_recursing = 1;
+      __isa(@_);
     }
-  }
-  if (!defined &_isa) {
-    my $isa = \&UNIVERSAL::isa;
-    eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
-      $isa if 0; # capture for 5.6
-      sub _isa {
-        local $UNIVERSAL::isa::recursing = 1;
-        local $UNIVERSAL::isa::_recursing = 1;
-        &$isa;
-      }
-
-      1;
-    } or die $@;
-  }
+    1;
+  } or die $@;
 }
 else {
   *_isa = \&UNIVERSAL::isa;
@@ -255,28 +241,14 @@ else {
 
 sub _can;
 if ($INC{'UNIVERSAL/can.pm'}) {
-  require B;
-  my $pad = B::svref_2object(\&UNIVERSAL::can)->PADLIST;
-  my ($n, $v) = $pad->ARRAY;
-  my @names = $n->ARRAY;
-  for my $i (0 .. $#names) {
-    if ($names[$i]->can('PV') && $names[$i]->PV eq '$orig') {
-      eval { *_can = $v->ARRAYelt($i)->object_2svref };
-      last;
+  *__can = \&UNIVERSAL::can;
+  eval q{
+    sub _can {
+      local $UNIVERSAL::can::recursing = 1;
+      __can(@_);
     }
-  }
-
-  if (!defined &_can) {
-    my $can = \&UNIVERSAL::can;
-    eval sprintf('#line %s "%s"', __LINE__+1, __FILE__) . q{
-      $can if 0; # capture for 5.6
-      sub _can {
-        local $UNIVERSAL::can::recursing = 1;
-        &$can;
-      }
-      1;
-    } or die $@;
-  }
+    1;
+  } or die $@;
 }
 else {
   *_can = \&UNIVERSAL::can;
